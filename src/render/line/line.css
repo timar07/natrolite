@@ -1,0 +1,6 @@
+.TextEditor__line {
+    font-family: var(--natrolite-font-family);
+    font-size: var(--natrolite-font-size);
+    font-weight: var(--natrolite-font-weight);
+    white-space: nowrap;
+}

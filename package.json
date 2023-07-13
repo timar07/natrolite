@@ -1,0 +1,23 @@
+{
+  "name": "natrolite",
+  "version": "1.0.0",
+  "description": "Simple text editor",
+  "main": "main.js",
+  "scripts": {
+    "build": "webpack --config ./webpack.config.js",
+    "start": "npm run build && electron ./main.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "timar07",
+  "license": "ISC",
+  "devDependencies": {
+    "css-loader": "^6.8.1",
+    "electron": "^25.2.0",
+    "html-webpack-plugin": "^5.5.3",
+    "style-loader": "^3.3.3",
+    "ts-loader": "^9.4.4",
+    "typescript": "^5.1.6",
+    "webpack": "^5.88.1",
+    "webpack-cli": "^5.1.4"
+  }
+}

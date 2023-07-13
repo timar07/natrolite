@@ -1,0 +1,35 @@
+@import url('https://fonts.googleapis.com/css2?family=Inconsolata:wght@200;400&display=swap');
+
+:root {
+    --natrolite-bg-secondary: #000000;
+    --natrolite-bg-primary: #1E1E1E;
+    --natrolite-font-color: #FFFFFF;
+    --natrolite-font-size: 1rem;
+    --natrolite-font-family: 'Inconsolata', monospace;
+    --natrolite-font-weight: 400;
+    --natrolite-lines-numbers-color: #8ab4f8;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+}
+
+.info {
+    display: block;
+    position: absolute;
+    z-index: 99999;
+    bottom: 300px;
+    left: 100px;
+    color: black;
+}
+
+.TextEditor {
+    display: flex;
+    width: 100%;
+    height: 100vh;
+    background-color: var(--natrolite-bg-primary);
+    color: var(--natrolite-font-color);
+    padding-left: 100px;
+    padding-top: 50px;
+}

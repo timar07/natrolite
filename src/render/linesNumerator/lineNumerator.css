@@ -1,0 +1,11 @@
+.TextEditor__linesNumbers {
+    flex: 0 0 50px;
+    padding-right: 20px;
+    color: var(--natrolite-lines-numbers-color);
+    font-family: var(--natrolite-font-family);
+    font-size: var(--natrolite-font-size);
+    font-weight: var(--natrolite-font-weight);
+    text-align: right;
+    user-select: none;
+    pointer-events: none;
+}
