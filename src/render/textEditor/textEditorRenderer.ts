@@ -20,13 +20,13 @@ export default class TextEditorRenderer {
         );
         this.root.appendChild(this.lines);
 
-        this.createLine('Hello, world!');
+        this.createLine('|');
         this.attachEvents();
     }
 
     private initLines() {
         const lines = document.createElement('div');
-        lines.className = 'TextEditor__lines-container';
+        lines.className = 'TextEditor__linesContainer';
         return lines;
     }
 
@@ -34,7 +34,7 @@ export default class TextEditorRenderer {
         document.addEventListener('mousedown', (e) => this.cursor.handleMouseDown(e));
         document.addEventListener('mouseup',   (e) => this.cursor.handleMouseUp(e));
         document.addEventListener('mousemove', (e) => this.cursor.handleMouseMove(e));
-        document.addEventListener('keydown',  (e) => this.handleKeypress(e));
+        document.addEventListener('keydown',   (e) => this.handleKeypress(e));
     }
 
     private handleKeypress(e: KeyboardEvent) {

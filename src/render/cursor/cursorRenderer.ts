@@ -30,18 +30,18 @@ export default class CursorRenderer {
 
     public handleMouseMove(event: MouseEvent) {
         if (this.isMouseDown) {
-            this.updateCursorPosition(event);
+            this.handleCursorEvent(event);
         }
     }
 
     public handleClick(event: MouseEvent) {
         this.isMouseDown = false;
-        this.updateCursorPosition(event);
+        this.handleCursorEvent(event);
     }
 
     public handleMouseDown(event: MouseEvent) {
         this.isMouseDown = true;
-        this.updateCursorPosition(event);
+        this.handleCursorEvent(event);
     }
 
     public handleMouseUp(event: MouseEvent) {
@@ -49,36 +49,34 @@ export default class CursorRenderer {
     }
 
     public shiftRightInLine(line: Node, n: number) {
-        this.cursorPosition.col++;
+        this.cursorPosition.col += n;
         this.parent = line.childNodes[0];
 
-        if (typeof this.parent !== 'undefined') {
-            const rect = RangeUtil.getCharRect(this.parent, this.cursorPosition.col);
-            this.renderAt({
-                col: this.cursorPosition.col,
-                line: this.cursorPosition.line,
-                x: rect.left,
-                y: rect.top
-            });
-        }
+        this.updateCursorPosition();
     }
 
     public shiftLeftInLine(line: Node, n: number) {
-        this.cursorPosition.col--;
+        this.cursorPosition.col -= n;
         this.parent = line.childNodes[0];
 
-        if (typeof this.parent !== 'undefined') {
-            const rect = RangeUtil.getCharRect(this.parent, this.cursorPosition.col);
-            this.renderAt({
-                col: this.cursorPosition.col,
-                line: this.cursorPosition.line,
-                x: rect.left,
-                y: rect.top
-            });
-        }
+        this.updateCursorPosition();
     }
 
-    public updateCursorPosition(event: MouseEvent) {
+    private updateCursorPosition() {
+        if (typeof this.parent === 'undefined') {
+            return;
+        }
+
+        const rect = RangeUtil.getCharRect(this.parent, this.cursorPosition.col) ?? new DOMRect(0, 0, 0, 0);
+        this.renderAt({
+            col: this.cursorPosition.col,
+            line: this.cursorPosition.line,
+            x: rect.left,
+            y: rect.top
+        });
+    }
+
+    public handleCursorEvent(event: MouseEvent) {
         // @ts-ignore
         this.parent = event.target.childNodes[0];
         const cursorPosition = this.getCursorPosition(
@@ -109,7 +107,7 @@ export default class CursorRenderer {
 
         for (let i = 0; i < chars.length; i++) {
             const cursorCoords = this.getCursorCoordsInBounds(
-                RangeUtil.getCharRect(this.parent, i),
+                RangeUtil.getCharRect(this.parent, i) ?? new DOMRect(0, 0, 0, 0),
                 clientX,
                 clientY
             );

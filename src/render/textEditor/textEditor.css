@@ -33,3 +33,7 @@
     padding-left: 100px;
     padding-top: 50px;
 }
+
+.TextEditor__linesContainer {
+    position: relative;
+}

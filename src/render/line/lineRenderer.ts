@@ -13,10 +13,10 @@ export default class LineRenderer {
     public getElement() { return this.element }
 
     private createLine(content: string): HTMLElement {
-        const element = document.createElement('div');
+        const element = document.createElement('pre');
         element.className = 'TextEditor__line';
 
-        const span = document.createElement('span');
+        const span = document.createElement('pre');
         span.textContent = content;
 
         element.appendChild(span);
