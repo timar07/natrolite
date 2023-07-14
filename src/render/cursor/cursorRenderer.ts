@@ -4,7 +4,7 @@ import RangeUtil from "./rangeUtil";
 export type TCursorPosition =  {
     col: number,
     line: number
-} & TCursorCoordinates;
+};
 
 export type TCursorCoordinates = {
     x: number,
@@ -15,11 +15,13 @@ export default class CursorRenderer {
     private element: HTMLElement;
     private isMouseDown: boolean = false;
     private cursorPosition: TCursorPosition;
-    private parent?: Node;
+    private cursorCoords: TCursorCoordinates;
+    private textNode?: Node;
 
     constructor() {
         this.element = this.createCursorElement();
-        this.cursorPosition = {x: 0, y: 0, col: 0, line: 0};
+        this.cursorPosition = {col: 0, line: 0};
+        this.cursorCoords = {x: 0, y: 0};
     }
 
     public getElement() { return this.element; }
@@ -48,76 +50,62 @@ export default class CursorRenderer {
         this.isMouseDown = false;
     }
 
-    public shiftRightInLine(line: Node, n: number) {
-        this.cursorPosition.col += n;
-        this.parent = line.childNodes[0];
+    public setToRect(rect: DOMRect, cursorPosition: TCursorPosition) {
+        console.log(cursorPosition);
+        this.cursorPosition = cursorPosition;
 
-        this.updateCursorPosition();
-    }
-
-    public shiftLeftInLine(line: Node, n: number) {
-        this.cursorPosition.col -= n;
-        this.parent = line.childNodes[0];
-
-        this.updateCursorPosition();
-    }
-
-    private updateCursorPosition() {
-        if (typeof this.parent === 'undefined') {
-            return;
-        }
-
-        const rect = RangeUtil.getCharRect(this.parent, this.cursorPosition.col) ?? new DOMRect(0, 0, 0, 0);
-        this.renderAt({
-            col: this.cursorPosition.col,
-            line: this.cursorPosition.line,
-            x: rect.left,
+        this.cursorCoords = {
+            x: rect.right,
             y: rect.top
-        });
+        };
+
+        this.renderAt(this.cursorCoords);
     }
 
     public handleCursorEvent(event: MouseEvent) {
         // @ts-ignore
-        this.parent = event.target.childNodes[0];
-        const cursorPosition = this.getCursorPosition(
+        this.textNode = event.target.childNodes[0];
+        const cursorCoords = this.getCursorCoords(
             event.clientX,
             event.clientY
         );
 
-        if (cursorPosition) {
-            this.cursorPosition = cursorPosition;
-            this.renderAt(cursorPosition);
+        if (cursorCoords) {
+            this.cursorCoords = cursorCoords;
+            this.renderAt(cursorCoords);
         }
     }
 
-    private renderAt(cursorPosition: TCursorPosition) {
+    private renderAt(cursorPosition: TCursorCoordinates) {
         this.element.style.top = cursorPosition.y + 'px';
         this.element.style.left = cursorPosition.x + 'px';
     }
 
-    private getCursorPosition(
+    private getCursorCoords(
         clientX: number,
         clientY: number
-    ): TCursorPosition | null {
-        if (this.parent?.nodeName !== '#text') {
+    ): TCursorCoordinates | null {
+        if (this.textNode?.nodeName !== '#text') {
             return null;
         }
 
-        let chars = (this.parent.textContent || '').split('');
+        let chars = (this.textNode.textContent || '').split('');
 
         for (let i = 0; i < chars.length; i++) {
             const cursorCoords = this.getCursorCoordsInBounds(
-                RangeUtil.getCharRect(this.parent, i) ?? new DOMRect(0, 0, 0, 0),
+                RangeUtil.getCharRect(this.textNode, i) ?? new DOMRect(0, 0, 0, 0),
                 clientX,
                 clientY
             );
 
             if (cursorCoords) {
-                return {
+                // TODO: Refactoring, line is always 0
+                this.cursorPosition = {
                     line: 0,
-                    col: i,
-                    ...cursorCoords
-                }
+                    col: i
+                };
+
+                return cursorCoords;
             }
         }
 

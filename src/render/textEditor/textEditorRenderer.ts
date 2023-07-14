@@ -1,115 +1,102 @@
-import CursorRenderer, { TCursorCoordinates, TCursorPosition } from "../cursor/cursorRenderer";
-import LineRenderer from "../line/lineRenderer";
-import LinesNumeratorRenderer from "../linesNumerator/linesNumeratorRenderer";
+import CursorRenderer, { TCursorPosition } from "../cursor/cursorRenderer";
+import { IKeyboardKey, UserEvents } from "../userEvents";
+import LinesRenderer from "./linesRenderer";
 import "./textEditor.css";
 
 export default class TextEditorRenderer {
     private root: HTMLElement;
-    private lines: Element;
     private cursor: CursorRenderer;
-    private lineNumbers;
+    private lines: LinesRenderer;
+    private userEvents;
 
     constructor() {
         this.root = document.querySelector<HTMLElement>('.TextEditor') as HTMLElement;
-        this.lines = this.initLines();
-        this.lineNumbers = new LinesNumeratorRenderer()
         this.cursor = new CursorRenderer();
+        this.userEvents = new UserEvents();
+        this.lines = new LinesRenderer(this.root);
 
         this.root.appendChild(
             this.cursor.getElement()
         );
-        this.root.appendChild(this.lines);
 
-        this.createLine('|');
         this.attachEvents();
-    }
-
-    private initLines() {
-        const lines = document.createElement('div');
-        lines.className = 'TextEditor__linesContainer';
-        return lines;
+        this.lines.createLine('Hello, world!');
     }
 
     private attachEvents() {
         document.addEventListener('mousedown', (e) => this.cursor.handleMouseDown(e));
         document.addEventListener('mouseup',   (e) => this.cursor.handleMouseUp(e));
         document.addEventListener('mousemove', (e) => this.cursor.handleMouseMove(e));
-        document.addEventListener('keydown',   (e) => this.handleKeypress(e));
+        this.userEvents.onKeyPress = this.handleKeypress.bind(this);
     }
 
-    private handleKeypress(e: KeyboardEvent) {
-        e.preventDefault();
+    private handleKeypress(key: IKeyboardKey) {
+        let strategy: IEditingStrategy;
+        const pos = this.cursor.getPosition();
 
-        console.log(e.code)
+        strategy = key.isPrintable()
+            ? new TypingStrategy(
+                this.lines.getLineTextContent(pos.line),
+                pos,
+                key.toString()
+            )
+            : new BackspaceStrategy(
+                this.lines.getLineTextContent(pos.line),
+                pos
+            );
 
-        switch (e.key) {
-            case 'Enter': {
-                this.createLine('');
-            } break;
+        this.lines.setLineTextContent(pos.line, strategy.getText());
 
-            case 'Backspace': {
-                this.deleteChar(this.cursor.getPosition());
-                this.cursor.shiftLeftInLine(
-                    this.getCurrentLine(),
-                    1
-                )
-            } break;
+        this.cursor.setToRect(
+            this.lines.getRect(
+                pos.line,
+                pos.col
+            ),
+            strategy.getCurrentPosition()
+        );
+    }
+}
 
-            case 'ArrowRight': {
-                this.cursor.shiftRightInLine(
-                    this.getCurrentLine(),
-                    1
-                )
-            } break;
+interface IEditingStrategy {
+    getText(): string;
+    getCurrentPosition(): TCursorPosition;
+}
 
-            case 'ArrowLeft': {
-                this.cursor.shiftLeftInLine(
-                    this.getCurrentLine(),
-                    1
-                )
-            } break;
+class BackspaceStrategy implements IEditingStrategy {
+    constructor(
+        private lineText: string,
+        private at: TCursorPosition
+    ) {
+    }
 
-            case 'Shift': break;
-
-            default: {
-                console.log(e)
-                this.insertChar(
-                    this.cursor.getPosition(),
-                    e.key
-                );
-                this.cursor.shiftRightInLine(
-                    this.getCurrentLine(),
-                    1
-                );
-            }
+    getCurrentPosition(): TCursorPosition {
+        return {
+            col: this.at.col-1, // shift cursor left
+            line: this.at.line,
         }
     }
 
-    private deleteChar(at: TCursorPosition) {
-        const line = this.lines.children.item(at.line) as Element; // TODO: DRY
-        line.textContent = (line.textContent?.slice(0, at.col-1) || '') + line.textContent?.slice(at.col);
+    getText(): string {
+        console.log(this.lineText.slice(0, this.at.col-1), this.lineText.slice(this.at.col))
+        return (this.lineText.slice(0, this.at.col-1) || '') + this.lineText.slice(this.at.col);
     }
+}
 
-    private insertChar(
-        at: TCursorPosition,
-        char: string
+class TypingStrategy implements IEditingStrategy {
+    constructor(
+        private lineText: string,
+        private at: TCursorPosition,
+        private text: string
     ) {
-        const line = this.lines.children.item(at.line) as Element;
-        line.textContent = line.textContent?.slice(0, at.col) + char + line.textContent?.slice(at.col);
+    }
+    getCurrentPosition(): TCursorPosition {
+        return {
+            col: this.at.col+this.text.length, // shift cursor right
+            line: this.at.line,
+        }
     }
 
-    private getCurrentLine() {
-        return this.lines.childNodes.item(
-            this.lineNumbers.getLastLineNumber()-1
-        );
-    }
-
-    private createLine(content: string) {
-        const line = new LineRenderer(content);
-
-        this.lineNumbers.increment();
-        this.lines.appendChild(
-            line.getElement()
-        );
+    getText(): string {
+        return (this.lineText.slice(0, this.at.col) || '') + this.text + this.lineText.slice(this.at.col);
     }
 }

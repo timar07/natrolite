@@ -8,7 +8,7 @@ export default class RangeUtil {
             range.setStart(textNode, index);
             range.setEnd(textNode, index+1);
             return range.getClientRects()[0];
-        } catch {
+        } catch(e) {
             return null;
         }
     }

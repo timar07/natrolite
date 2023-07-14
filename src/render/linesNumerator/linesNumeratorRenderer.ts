@@ -20,7 +20,7 @@ export default class LinesNumeratorRenderer {
     private createLineElement() {
         const element = document.createElement('div');
         element.className = 'TextEditor__lineNumber';
-        element.textContent = String(this.lastLineNumber);
+        element.textContent = String(this.lastLineNumber) + ' ';
         return element;
     }
 }
