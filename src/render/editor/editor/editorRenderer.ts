@@ -1,4 +1,4 @@
-import LinesRenderer from "../lines/linesRenderer";
+import LinesRenderer, { Delete, Insert } from "../lines/linesRenderer";
 import { TEditorPosition } from "./editor";
 import "./editor.css";
 
@@ -23,10 +23,10 @@ export default class EditorRenderer {
     }
 
     public insertCharAt(pos: TEditorPosition, char: string) {
-        this.lines.insertCharAt(pos, char);
+        this.lines.edit(pos, new Insert(char));
     }
 
     public deleteCharAt(pos: TEditorPosition) {
-        this.lines.deleteCharAt(pos);
+        this.lines.edit(pos, new Delete());
     }
 }

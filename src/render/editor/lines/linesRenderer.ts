@@ -2,6 +2,28 @@ import { TEditorPosition } from "../editor/editor";
 import LinesNumeratorRenderer from "../linesNumerator/linesNumeratorRenderer";
 import "./line.css";
 
+interface ILineEditingStrategy {
+    edit(pos: TEditorPosition, text: string): string;
+}
+
+export class Insert implements ILineEditingStrategy {
+    constructor(
+        private char: string
+    ) {}
+
+    edit(pos: TEditorPosition, text: string) {
+        return text.slice(0, pos.col) + this.char + text.slice(pos.col);
+    }
+}
+
+export class Delete implements ILineEditingStrategy {
+    constructor() {}
+
+    edit(pos: TEditorPosition, text: string) {
+        return text.slice(0, pos.col-1) + text.slice(pos.col);
+    }
+}
+
 export default class LinesRenderer {
     private container: Element;
     private lines: LineRenderer[] = [];
@@ -12,12 +34,6 @@ export default class LinesRenderer {
     ) {
         this.container = this.createLinesContainer();
         this.root.append(this.container);
-    }
-
-    private createLinesContainer() {
-        const container = document.createElement('div');
-        container.className = 'TextEditor__linesContainer';
-        return container;
     }
 
     public addLine(content: string, at: TEditorPosition) {
@@ -32,19 +48,18 @@ export default class LinesRenderer {
         this.linesNumerator.decrement();
     }
 
-    // TODO: Cleanup here
-    public insertCharAt(pos: TEditorPosition, char: string) {
+    public edit(
+        pos: TEditorPosition,
+        strategy: ILineEditingStrategy
+    ) {
         const line = this.lines[pos.line];
-        const textContent = line.getTextContent();
-        const newTextContent = textContent.slice(0, pos.col) + char + textContent.slice(pos.col);
-        line.updateTextContent(newTextContent);
+        line.updateTextContent(strategy.edit(pos, line.getTextContent()));
     }
 
-    public deleteCharAt(pos: TEditorPosition) {
-        const line = this.lines[pos.line];
-        const textContent = line.getTextContent();
-        const newTextContent = textContent.slice(0, pos.col-1) + textContent.slice(pos.col);
-        line.updateTextContent(newTextContent);
+    private createLinesContainer() {
+        const container = document.createElement('div');
+        container.className = 'TextEditor__linesContainer';
+        return container;
     }
 }
 
