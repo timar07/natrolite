@@ -1,4 +1,9 @@
+.TextEditor__linesContainer {
+    width: 100%;
+}
+
 .TextEditor__line {
+    width: 100%;
     font-family: var(--natrolite-font-family);
     font-size: var(--natrolite-font-size);
     font-weight: var(--natrolite-font-weight);

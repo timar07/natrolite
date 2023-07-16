@@ -17,6 +17,13 @@ export default class LinesNumeratorRenderer {
         this.container.appendChild(this.createLineElement());
     }
 
+    public decrement() {
+        this.lastLineNumber--;
+        this.container.removeChild(
+            this.container.childNodes[this.container.childNodes.length-1]
+        );
+    }
+
     private createLineElement() {
         const element = document.createElement('div');
         element.className = 'TextEditor__lineNumber';

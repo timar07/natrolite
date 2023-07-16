@@ -15,6 +15,10 @@
     padding: 0;
 }
 
+body {
+    background-color: var(--natrolite-bg-primary);
+}
+
 .info {
     display: block;
     position: absolute;
@@ -30,8 +34,12 @@
     height: 100vh;
     background-color: var(--natrolite-bg-primary);
     color: var(--natrolite-font-color);
-    padding-left: 100px;
-    padding-top: 50px;
+    margin-left: 100px;
+    margin-top: 50px;
+}
+
+.TextEditor__wrap {
+    position: relative;
 }
 
 .TextEditor__linesContainer {

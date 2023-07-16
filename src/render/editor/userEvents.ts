@@ -1,25 +1,4 @@
-export interface IKeyboardKey {
-    isPrintable(): boolean;
-    toString(): string;
-}
-
-export class PrintableCharacter implements IKeyboardKey {
-    private key;
-
-    constructor(key: string) {
-        this.key = key;
-    }
-
-    isPrintable() { return true; }
-    toString() {
-        return this.key;
-    }
-}
-
-export class Backspace implements IKeyboardKey {
-    isPrintable() { return false; }
-    toString() { return 'Backspace'; }
-}
+// import { ipcRenderer } from 'electron';
 
 export class UserEvents {
     public onKeyPress?: (key: IKeyboardKey) => void;
@@ -27,7 +6,7 @@ export class UserEvents {
     constructor() {
         document.onkeydown = (event) => {
             const key = this.handleKey(event)
-            if (key) this.onKeyPress?.(key);
+            // ipcRenderer.send('keypress', key);
         }
     }
 
@@ -44,4 +23,27 @@ export class UserEvents {
             }
         }
     }
+}
+
+new UserEvents();
+
+export interface IKeyboardKey {
+    isPrintable(): boolean;
+    toString(): string;
+}
+
+export class PrintableCharacter implements IKeyboardKey {
+    private key;
+
+    constructor(key: string) {
+        this.key = key;
+    }
+
+    isPrintable() { return true; }
+    toString() { return this.key; }
+}
+
+export class Backspace implements IKeyboardKey {
+    isPrintable() { return false; }
+    toString() { return 'Backspace'; }
 }

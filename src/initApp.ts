@@ -1,3 +1,3 @@
-import TextEditorRenderer from "./render/textEditor/textEditorRenderer"
+import Editor from "./render/editor/editor/editor";
 
-new TextEditorRenderer();
+new Editor();
