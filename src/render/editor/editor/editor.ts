@@ -32,7 +32,6 @@ export default class Editor {
         switch (event.key) {
             case 'Shift': return;
             case 'Backspace': {
-
                 if (this.editorPosition.col <= 0) {
                     if (this.editorPosition.line == 0) return;
                     this.view.deleteLine(this.editorPosition);
@@ -97,4 +96,9 @@ export default class Editor {
             cursor.height
         );
     }
+}
+
+interface IEditorCommand {
+    execute(receiver: Editor): void;
+    undo(): void;
 }
