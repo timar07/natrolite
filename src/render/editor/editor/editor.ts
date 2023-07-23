@@ -46,7 +46,7 @@ export default class EditorFacade {
     }
 
     public handleCursorOperation(operation: IMoveOperation) {
-        this.cursor.handleOperation(operation);
+        operation.execute(this.cursor);
     }
 
     public getCurrentLineLength() {
@@ -59,10 +59,10 @@ export default class EditorFacade {
 
     private handleKeyPress(event: KeyboardEvent) {
         event.preventDefault();
-        this.getEditorOperation(event.key).execute(this);
+        this.getEditorOperation(event.key)?.execute(this);
     }
 
-    private getEditorOperation(key: string): IEditorCommand {
+    private getEditorOperation(key: string) {
         switch (key) {
             case 'Shift':
                 return new NoOperation();
@@ -78,9 +78,17 @@ export default class EditorFacade {
                 return new ArrowUp();
             case 'Enter':
                 return new Enter();
-            default:
-                return new InsertChar(key.toString());
+            case 'Tab':
+                return new Tab();
         }
+
+        if (this.isPrintableChar(key)) {
+            return new InsertChar(key.toString());
+        }
+    }
+
+    private isPrintableChar(key: string) {
+        return key.length == 1;
     }
 
     public getPosition(): TEditorPosition {
@@ -154,6 +162,17 @@ class Enter implements IEditorCommand {
         receiver.addLine('');
         receiver.handleCursorOperation(new CursorOperations.CarriageReturn());
         receiver.handleCursorOperation(new CursorOperations.MoveDown());
+    }
+
+    undo(): void {
+        throw new Error("Method not implemented.");
+    }
+}
+
+class Tab implements IEditorCommand {
+    execute(receiver: EditorFacade): void {
+        receiver.insertChar(' '.repeat(4));
+        receiver.handleCursorOperation(new CursorOperations.MoveRight(4));
     }
 
     undo(): void {
