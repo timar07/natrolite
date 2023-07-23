@@ -22,10 +22,8 @@ export class InsertChar implements IEditorCommand {
 
 export class Backspace implements IEditorCommand {
     execute(receiver: EditorFacade): void {
-        if (receiver.getPosition().col <= 0) {
-            if (receiver.getPosition().line == 0)
-                return;
-
+        if (this.isLineEmpty(receiver)) {
+            if (!this.isLinesLeft(receiver)) return;
             receiver.deleteLine();
             receiver.handleCursorOperation(new CursorOperations.MoveUp());
             receiver.handleCursorOperation(new CursorOperations.MoveRight(
@@ -36,6 +34,14 @@ export class Backspace implements IEditorCommand {
 
         receiver.deleteChar();
         receiver.handleCursorOperation(new CursorOperations.MoveLeft());
+    }
+
+    private isLineEmpty(receiver: EditorFacade) {
+        return receiver.getPosition().col <= 0
+    }
+
+    private isLinesLeft(receiver: EditorFacade) {
+        return receiver.getPosition().line > 0
     }
 
     undo(): void {

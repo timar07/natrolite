@@ -21,7 +21,7 @@ export class MouseDown implements ICursorEventHandler {
     }
 
     private isOutsideOfText(event: MouseEvent) {
-        return event.offsetX >= RangeUtil.measureText(event.target as Node).width
+        return event.offsetX >= (RangeUtil.measureText(event.target as Node)?.width || 0)
     }
 
     protected getClickedRect(event: MouseEvent) {

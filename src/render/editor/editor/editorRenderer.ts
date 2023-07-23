@@ -10,6 +10,8 @@ export default class EditorRenderer {
 
     constructor() {}
 
+    public getElement() { return this.root; }
+
     public getLineLength(line: number) {
         return this.lines.getLineLength(line);
     }

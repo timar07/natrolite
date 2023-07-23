@@ -6,7 +6,9 @@ import { IMoveOperation } from "./cursorOperations";
 import "./cursor.css";
 
 export default class Cursor {
-    private view;
+    private view = new DefaultDecorator(
+        new CursorRenderer()
+    );
     private state = new CursorState();
     private isMouseDown = false;
     private lineWidth = 0;
@@ -14,27 +16,24 @@ export default class Cursor {
     public onUpdate?: () => void;
 
     constructor(
+        private parent: HTMLElement,
         private initialRect: DOMRect
     ) {
-        this.view = new DefaultDecorator(
-            new CursorRenderer()
-        );
-
         this.state.setFromRect(initialRect);
         this.view.render(this.state);
 
-        document.onmousedown = (e) => {
+        parent.onmousedown = (e) => {
             new MouseDown().handle(e, this.state);
             this.view.render(this.state);
             this.state.isMouseDown = true;
             this.onUpdate?.();
         };
 
-        document.onmouseup = (e) => {
+        parent.onmouseup = (e) => {
             this.state.isMouseDown = false;
         }
 
-        document.onmousemove = (e) => {
+        parent.onmousemove = (e) => {
             new MouseMove().handle(e, this.state);
             this.view.render(this.state);
             this.onUpdate?.();

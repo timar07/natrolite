@@ -16,6 +16,7 @@ export interface ICommand<T> {
 export default class EditorFacade {
     private view = new EditorRenderer();
     private cursor = new Cursor(
+        this.view.getElement(),
         new DOMRect(100, 50, 8, 16.5) // FIXME: Hardcoded
     );
     private editorPosition: TEditorPosition = {
