@@ -7,7 +7,21 @@ interface ICursorEventHandler {
 
 export class MouseDown implements ICursorEventHandler {
     handle(event: MouseEvent, state: CursorState): void {
+        if (this.isOutsideOfText(event)) {
+            const target = event.target as HTMLElement;
+            const rect = RangeUtil.getCharRect(
+                target.childNodes[0],
+                (target.textContent?.length || 1) - 1
+            );
+            state.setFromRect(rect);
+            return;
+        }
+
         state.setFromRect(this.getClickedRect(event));
+    }
+
+    private isOutsideOfText(event: MouseEvent) {
+        return event.offsetX >= RangeUtil.measureText(event.target as Node).width
     }
 
     protected getClickedRect(event: MouseEvent) {
@@ -19,11 +33,24 @@ export class MouseDown implements ICursorEventHandler {
             const rect = RangeUtil.getCharRect(target, i);
 
             if (this.isInRectBounds(rect, event.clientX, event.clientY)) {
-                return rect;
+                if (this.isCursorBefore(rect, event.clientX, event.clientY)) {
+                    return rect
+                }
+
+               return new DOMRect(
+                    rect.x + rect.width,
+                    rect.y,
+                    rect.width,
+                    rect.height
+               );
             }
         }
 
         return null;
+    }
+
+    private isCursorBefore(rect: DOMRect, clientX: number, clientY: number) {
+        return rect.left <= clientX && (rect.left + rect.width/2) >= clientX;
     }
 
     private isInRectBounds(rect: DOMRect | undefined, clientX: number, clientY: number) {

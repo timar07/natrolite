@@ -12,4 +12,11 @@ export default class RangeUtil {
             return new DOMRect(0, 0, 0, 0);
         }
     }
+
+    public static measureText(parent: Node) {
+        const range = document.createRange();
+        range.setStart(parent, 0);
+        range.setEnd(parent, 1);
+        return range.getClientRects()[0];
+    }
 }

@@ -40,6 +40,7 @@ body {
 
 .TextEditor__wrap {
     position: relative;
+    width: 100%;
 }
 
 .TextEditor__linesContainer {
