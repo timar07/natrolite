@@ -8,4 +8,5 @@
     font-size: var(--natrolite-font-size);
     font-weight: var(--natrolite-font-weight);
     cursor: text;
+    user-select: none;
 }

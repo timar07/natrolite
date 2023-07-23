@@ -21,7 +21,7 @@ export class MoveLeft implements IMoveOperation {
     }
 
     getMoveMatrix(): [number, number] {
-        return [-1, 0];
+        return [-1 * this.times, 0];
     }
 }
 
