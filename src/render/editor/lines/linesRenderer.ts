@@ -26,7 +26,7 @@ export class Delete implements ILineEditingStrategy {
 
 export default class LinesRenderer {
     private container: Element;
-    private lines: LineRenderer[] = [];
+    private lines: SingleLineRenderer[] = [];
     private linesNumerator = new LinesNumeratorRenderer();
 
     constructor(
@@ -36,8 +36,12 @@ export default class LinesRenderer {
         this.root.append(this.container);
     }
 
+    public getLineLength(at: TEditorPosition) {
+        return this.lines[at.line].getTextContent().length
+    }
+
     public addLine(content: string, at: TEditorPosition) {
-        const line = new LineRenderer(this.container, content, at.line);
+        const line = new SingleLineRenderer(this.container, content, at.line);
         this.lines.splice(at.line, 0, line);
         this.linesNumerator.increment();
     }
@@ -63,7 +67,7 @@ export default class LinesRenderer {
     }
 }
 
-class LineRenderer {
+class SingleLineRenderer {
     private element;
 
     constructor(

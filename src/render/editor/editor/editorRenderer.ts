@@ -10,6 +10,10 @@ export default class EditorRenderer {
 
     constructor() {}
 
+    public getLineLength(at: TEditorPosition) {
+        return this.lines.getLineLength(at);
+    }
+
     public addLine(content: string, at: TEditorPosition) {
         this.lines.addLine(content, at);
     }
