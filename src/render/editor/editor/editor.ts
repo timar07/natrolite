@@ -59,6 +59,10 @@ export default class EditorFacade {
         operation.execute(this.cursor);
     }
 
+    public getLastLineIndex() {
+        return this.view.getLastLineIndex();
+    }
+
     public getCurrentLineLength() {
         return this.view.getLineLength(this.editorPosition.line);
     }

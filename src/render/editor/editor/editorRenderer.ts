@@ -33,4 +33,8 @@ export default class EditorRenderer {
     public deleteCharAt(pos: TEditorPosition) {
         this.lines.edit(pos, new Delete());
     }
+
+    public getLastLineIndex() {
+        return this.lines.getLastLineIndex();
+    }
 }

@@ -36,6 +36,10 @@ export default class LinesRenderer {
         this.root.append(this.container);
     }
 
+    public getLastLineIndex() {
+        return this.lines.length - 1;
+    }
+
     public getLineLength(line: number) {
         return this.lines[line].getTextContent().length
     }
@@ -85,6 +89,15 @@ class SingleLineRenderer {
                 this.root.childNodes[lineIndex]
             );
         }
+    }
+
+    public setSelection(start: number, end: number) {
+        const textNode = this.element.childNodes[0];
+        const range = new Range();
+        range.setStart(textNode, start);
+        range.setEnd(textNode, end);
+        document.getSelection()?.removeAllRanges();
+        document.getSelection()?.addRange(range);
     }
 
     public remove() {

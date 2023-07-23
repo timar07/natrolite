@@ -68,6 +68,7 @@ export class Tab implements IEditorCommand {
 
 export class ArrowUp implements IEditorCommand {
     execute(receiver: EditorFacade): void {
+        if (receiver.getPosition().line == 0) return;
         receiver.handleCursorOperation(new CursorOperations.MoveUp());
         this.normalizeHorizontalPosition(receiver);
     }
@@ -96,6 +97,8 @@ export class ArrowUp implements IEditorCommand {
 
 export class ArrowDown implements IEditorCommand {
     execute(receiver: EditorFacade): void {
+        if (receiver.getPosition().line == receiver.getLastLineIndex())
+            return;
         receiver.handleCursorOperation(new CursorOperations.MoveDown());
     }
 
