@@ -36,6 +36,7 @@ export default class Editor {
                     if (this.editorPosition.line == 0) return;
                     this.view.deleteLine(this.editorPosition);
                     this.cursor.handleOperation(CursorOperation.moveUp);
+                    this.cursor.handleOperation(CursorOperation.moveEndOfLine);
                     return;
                 }
 
@@ -46,7 +47,7 @@ export default class Editor {
                 this.cursor.handleOperation(CursorOperation.moveLeft);
             } break;
             case 'ArrowLeft': {
-                if (this.editorPosition.col == 1) return;
+                if (this.editorPosition.col == 0) return;
                 this.cursor.handleOperation(CursorOperation.moveLeft);
             } break;
             case 'ArrowRight': {
