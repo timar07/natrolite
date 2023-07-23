@@ -1,7 +1,7 @@
 import CursorState from "./cursorState";
 import CursorRenderer from "./cursorRenderer";
 import { MouseDown, MouseMove } from "./cursorEvents";
-import { UnderlineDecorator } from "./cursorDecorations";
+import { DefaultDecorator } from "./cursorDecorations";
 import { IMoveOperation } from "./cursorOperations";
 import "./cursor.css";
 
@@ -16,7 +16,7 @@ export default class Cursor {
     constructor(
         private initialRect: DOMRect
     ) {
-        this.view = new UnderlineDecorator(
+        this.view = new DefaultDecorator(
             new CursorRenderer()
         );
 
