@@ -1,11 +1,17 @@
 import Cursor from "../cursor/cursor";
-import { CursorOperations, IMoveOperation } from "../cursor/cursorOperations";
+import { IMoveOperation } from "../cursor/cursorOperations";
+import { EditorCommands } from "./editorCommands";
 import EditorRenderer from "./editorRenderer";
 
 export type TEditorPosition = {
     line: number,
     col: number
 };
+
+export interface ICommand<T> {
+    execute(receiver: T): void;
+    undo(): void;
+}
 
 export default class EditorFacade {
     private view = new EditorRenderer();
@@ -24,6 +30,10 @@ export default class EditorFacade {
 
         document.onkeydown = this.handleKeyPress.bind(this);
         this.view.addLine('', this.editorPosition);
+    }
+
+    public resetSelection() {
+        document.getSelection()?.removeAllRanges();
     }
 
     public insertChar(char: string) {
@@ -59,31 +69,43 @@ export default class EditorFacade {
 
     private handleKeyPress(event: KeyboardEvent) {
         event.preventDefault();
-        this.getEditorOperation(event.key)?.execute(this);
+        if (event.shiftKey) {
+            this.getShiftOperation(event.key)?.execute(this);
+            return;
+        }
+
+        this.getSimpleOperation(event.key)?.execute(this);
     }
 
-    private getEditorOperation(key: string) {
+    private getShiftOperation(key: string) {
         switch (key) {
-            case 'Shift':
-                return new NoOperation();
-            case 'Backspace':
-                return new Backspace();
-            case 'ArrowLeft':
-                return new ArrowLeft();
-            case 'ArrowRight':
-                return new ArrowRight();
-            case 'ArrowDown':
-                return new ArrowDown();
-            case 'ArrowUp':
-                return new ArrowUp();
-            case 'Enter':
-                return new Enter();
-            case 'Tab':
-                return new Tab();
         }
 
         if (this.isPrintableChar(key)) {
-            return new InsertChar(key.toString());
+            return new EditorCommands.InsertChar(key.toString());
+        }
+    }
+
+    private getSimpleOperation(key: string) {
+        switch (key) {
+            case 'Backspace':
+                return new EditorCommands.Backspace();
+            case 'ArrowLeft':
+                return new EditorCommands.ArrowLeft();
+            case 'ArrowRight':
+                return new EditorCommands.ArrowRight();
+            case 'ArrowDown':
+                return new EditorCommands.ArrowDown();
+            case 'ArrowUp':
+                return new EditorCommands.ArrowUp();
+            case 'Enter':
+                return new EditorCommands.Enter();
+            case 'Tab':
+                return new EditorCommands.Tab();
+        }
+
+        if (this.isPrintableChar(key)) {
+            return new EditorCommands.InsertChar(key.toString());
         }
     }
 
@@ -110,121 +132,4 @@ export default class EditorFacade {
             cursor.height
         );
     }
-}
-
-export interface ICommand<T> {
-    execute(receiver: T): void;
-    undo(): void;
-}
-
-interface IEditorCommand extends ICommand<EditorFacade> {}
-
-class InsertChar implements IEditorCommand {
-    constructor(
-        private char: string
-    ) {}
-
-    execute(receiver: EditorFacade): void {
-        receiver.insertChar(this.char);
-        receiver.handleCursorOperation(new CursorOperations.MoveRight());
-    }
-
-    undo(): void {
-        throw new Error("Method not implemented.");
-    }
-}
-
-class Backspace implements IEditorCommand {
-    execute(receiver: EditorFacade): void {
-        if (receiver.getPosition().col <= 0) {
-            if (receiver.getPosition().line == 0)
-                return;
-
-            receiver.deleteLine();
-            receiver.handleCursorOperation(new CursorOperations.MoveUp());
-            receiver.handleCursorOperation(new CursorOperations.MoveRight(
-                receiver.getCurrentLineLength()
-            ));
-            return;
-        }
-
-        receiver.deleteChar();
-        receiver.handleCursorOperation(new CursorOperations.MoveLeft());
-    }
-
-    undo(): void {
-        throw new Error("Method not implemented.");
-    }
-}
-
-class Enter implements IEditorCommand {
-    execute(receiver: EditorFacade): void {
-        receiver.addLine('');
-        receiver.handleCursorOperation(new CursorOperations.CarriageReturn());
-        receiver.handleCursorOperation(new CursorOperations.MoveDown());
-    }
-
-    undo(): void {
-        throw new Error("Method not implemented.");
-    }
-}
-
-class Tab implements IEditorCommand {
-    execute(receiver: EditorFacade): void {
-        receiver.insertChar(' '.repeat(4));
-        receiver.handleCursorOperation(new CursorOperations.MoveRight(4));
-    }
-
-    undo(): void {
-        throw new Error("Method not implemented.");
-    }
-}
-
-class ArrowUp implements IEditorCommand {
-    execute(receiver: EditorFacade): void {
-        receiver.handleCursorOperation(new CursorOperations.MoveUp());
-    }
-
-    undo(): void {
-        throw new Error("Method not implemented.");
-    }
-}
-
-class ArrowDown implements IEditorCommand {
-    execute(receiver: EditorFacade): void {
-        receiver.handleCursorOperation(new CursorOperations.MoveDown());
-    }
-
-    undo(): void {
-        throw new Error("Method not implemented.");
-    }
-}
-
-class ArrowRight implements IEditorCommand {
-    execute(receiver: EditorFacade): void {
-        if (receiver.getPosition().col >= receiver.getCurrentLineLength())
-            return;
-
-        receiver.handleCursorOperation(new CursorOperations.MoveRight());
-    }
-
-    undo(): void {
-        throw new Error("Method not implemented.");
-    }
-}
-
-class ArrowLeft implements IEditorCommand {
-    execute(receiver: EditorFacade): void {
-        if (receiver.getPosition().col == 0) return;
-        receiver.handleCursorOperation(new CursorOperations.MoveLeft());
-    }
-
-    undo(): void {
-        throw new Error("Method not implemented.");
-    }
-}
-
-class NoOperation implements IEditorCommand {
-    execute(receiver: EditorFacade): void {}
-    undo(): void {}
 }
