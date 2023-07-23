@@ -5,9 +5,15 @@ export interface IMoveOperation extends ICommand<Cursor> {
     getMoveMatrix(): [number, number];
 }
 
+export namespace CursorOperations {
+
 export class MoveLeft implements IMoveOperation {
+    constructor(
+        private times: number = 1
+    ) {}
+
     execute(receiver: Cursor): void {
-        throw new Error("Method not implemented.");
+        receiver.handleOperation(this);
     }
 
     undo(): void {
@@ -20,20 +26,24 @@ export class MoveLeft implements IMoveOperation {
 }
 
 export class MoveRight implements IMoveOperation {
+    constructor(
+        private times: number = 1
+    ) {}
+
     execute(receiver: Cursor): void {
-        throw new Error("Method not implemented.");
+        receiver.handleOperation(this);
     }
     undo(): void {
         throw new Error("Method not implemented.");
     }
     getMoveMatrix(): [number, number] {
-        return [1, 0];
+        return [1 * this.times, 0];
     }
 }
 
 export class MoveDown implements IMoveOperation {
     execute(receiver: Cursor): void {
-        throw new Error("Method not implemented.");
+        receiver.handleOperation(this);
     }
     undo(): void {
         throw new Error("Method not implemented.");
@@ -45,7 +55,7 @@ export class MoveDown implements IMoveOperation {
 
 export class MoveUp implements IMoveOperation {
     execute(receiver: Cursor): void {
-        throw new Error("Method not implemented.");
+        receiver.handleOperation(this);
     }
     undo(): void {
         throw new Error("Method not implemented.");
@@ -55,21 +65,9 @@ export class MoveUp implements IMoveOperation {
     }
 }
 
-export class MoveEndOfLine implements IMoveOperation {
-    execute(receiver: Cursor): void {
-        throw new Error("Method not implemented.");
-    }
-    undo(): void {
-        throw new Error("Method not implemented.");
-    }
-    getMoveMatrix(): [number, number] {
-        return [Infinity, 0];
-    }
-}
-
 export class NoMove implements IMoveOperation {
     execute(receiver: Cursor): void {
-        throw new Error("Method not implemented.");
+        receiver.handleOperation(this);
     }
     undo(): void {
         throw new Error("Method not implemented.");
@@ -81,7 +79,7 @@ export class NoMove implements IMoveOperation {
 
 export class CarriageReturn implements IMoveOperation {
     execute(receiver: Cursor): void {
-        throw new Error("Method not implemented.");
+        receiver.handleOperation(this);
     }
     undo(): void {
         throw new Error("Method not implemented.");
@@ -91,41 +89,4 @@ export class CarriageReturn implements IMoveOperation {
     }
 }
 
-export class CursorOperation {
-    static readonly moveLeft = new CursorOperation(
-        new MoveLeft()
-    );
-
-    static readonly moveRight = new CursorOperation(
-        new MoveRight()
-    );
-
-    static readonly moveDown = new CursorOperation(
-        new MoveDown()
-    );
-
-    static readonly moveUp = new CursorOperation(
-        new MoveUp()
-    );
-
-    static readonly moveEndOfLine = new CursorOperation(
-        new MoveEndOfLine()
-    );
-
-
-    static readonly noMove = new CursorOperation(
-        new NoMove()
-    );
-
-    static readonly carriageReturn = new CursorOperation(
-        new CarriageReturn()
-    );
-
-    constructor(
-        private value: IMoveOperation
-    ) {}
-
-    getMoveMatrix() {
-        return this.value.getMoveMatrix();
-    }
-}
+} // namespace CursorOperations

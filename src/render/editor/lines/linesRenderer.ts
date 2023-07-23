@@ -36,8 +36,8 @@ export default class LinesRenderer {
         this.root.append(this.container);
     }
 
-    public getLineLength(at: TEditorPosition) {
-        return this.lines[at.line].getTextContent().length
+    public getLineLength(line: number) {
+        return this.lines[line].getTextContent().length
     }
 
     public addLine(content: string, at: TEditorPosition) {

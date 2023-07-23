@@ -1,6 +1,6 @@
 import Cursor from "../cursor/cursor";
+import { CursorOperations, IMoveOperation } from "../cursor/cursorOperations";
 import EditorRenderer from "./editorRenderer";
-import { CursorOperation } from "../cursor/cursorOperations";
 
 export type TEditorPosition = {
     line: number,
@@ -45,12 +45,16 @@ export default class EditorFacade {
         });
     }
 
-    public handleCursorOperation(operation: CursorOperation) {
+    public handleCursorOperation(operation: IMoveOperation) {
         this.cursor.handleOperation(operation);
     }
 
     public getCurrentLineLength() {
-        return this.view.getLineLength(this.editorPosition);
+        return this.view.getLineLength(this.editorPosition.line);
+    }
+
+    public getLineLength(line: number) {
+        return this.view.getLineLength(line)
     }
 
     private handleKeyPress(event: KeyboardEvent) {
@@ -114,7 +118,7 @@ class InsertChar implements IEditorCommand {
 
     execute(receiver: EditorFacade): void {
         receiver.insertChar(this.char);
-        receiver.handleCursorOperation(CursorOperation.moveRight);
+        receiver.handleCursorOperation(new CursorOperations.MoveRight());
     }
 
     undo(): void {
@@ -129,13 +133,15 @@ class Backspace implements IEditorCommand {
                 return;
 
             receiver.deleteLine();
-            receiver.handleCursorOperation(CursorOperation.moveUp);
-            receiver.handleCursorOperation(CursorOperation.moveEndOfLine);
+            receiver.handleCursorOperation(new CursorOperations.MoveUp());
+            receiver.handleCursorOperation(new CursorOperations.MoveRight(
+                receiver.getCurrentLineLength()
+            ));
             return;
         }
 
         receiver.deleteChar();
-        receiver.handleCursorOperation(CursorOperation.moveLeft);
+        receiver.handleCursorOperation(new CursorOperations.MoveLeft());
     }
 
     undo(): void {
@@ -146,8 +152,8 @@ class Backspace implements IEditorCommand {
 class Enter implements IEditorCommand {
     execute(receiver: EditorFacade): void {
         receiver.addLine('');
-        receiver.handleCursorOperation(CursorOperation.carriageReturn);
-        receiver.handleCursorOperation(CursorOperation.moveDown);
+        receiver.handleCursorOperation(new CursorOperations.CarriageReturn());
+        receiver.handleCursorOperation(new CursorOperations.MoveDown());
     }
 
     undo(): void {
@@ -157,7 +163,7 @@ class Enter implements IEditorCommand {
 
 class ArrowUp implements IEditorCommand {
     execute(receiver: EditorFacade): void {
-        receiver.handleCursorOperation(CursorOperation.moveUp);
+        receiver.handleCursorOperation(new CursorOperations.MoveUp());
     }
 
     undo(): void {
@@ -167,7 +173,7 @@ class ArrowUp implements IEditorCommand {
 
 class ArrowDown implements IEditorCommand {
     execute(receiver: EditorFacade): void {
-        receiver.handleCursorOperation(CursorOperation.moveDown);
+        receiver.handleCursorOperation(new CursorOperations.MoveDown());
     }
 
     undo(): void {
@@ -180,7 +186,7 @@ class ArrowRight implements IEditorCommand {
         if (receiver.getPosition().col >= receiver.getCurrentLineLength())
             return;
 
-        receiver.handleCursorOperation(CursorOperation.moveRight);
+        receiver.handleCursorOperation(new CursorOperations.MoveRight());
     }
 
     undo(): void {
@@ -191,7 +197,7 @@ class ArrowRight implements IEditorCommand {
 class ArrowLeft implements IEditorCommand {
     execute(receiver: EditorFacade): void {
         if (receiver.getPosition().col == 0) return;
-        receiver.handleCursorOperation(CursorOperation.moveLeft);
+        receiver.handleCursorOperation(new CursorOperations.MoveLeft());
     }
 
     undo(): void {
