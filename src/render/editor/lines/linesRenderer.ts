@@ -41,7 +41,7 @@ export default class LinesRenderer {
     }
 
     public getLineLength(line: number) {
-        return this.lines[line].getTextContent().length
+        return this.lines[line]?.getTextContent().length || 0;
     }
 
     public addLine(content: string, at: TEditorPosition) {
@@ -51,7 +51,7 @@ export default class LinesRenderer {
     }
 
     public deleteLine(at: TEditorPosition) {
-        this.lines[at.line].remove();
+        this.lines[at.line]?.remove();
         this.lines.splice(at.line, 1);
         this.linesNumerator.decrement();
     }
@@ -61,7 +61,7 @@ export default class LinesRenderer {
         strategy: ILineEditingStrategy
     ) {
         const line = this.lines[pos.line];
-        line.updateTextContent(strategy.edit(pos, line.getTextContent()));
+        line?.updateTextContent(strategy.edit(pos, line.getTextContent()));
     }
 
     private createLinesContainer() {
