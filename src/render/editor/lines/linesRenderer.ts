@@ -44,15 +44,19 @@ export default class LinesRenderer {
         return this.lines[line]?.getTextContent().length || 0;
     }
 
+    public getLineContents(line: number) {
+        return this.lines[line]?.getTextContent() || '';
+    }
+
     public addLine(content: string, at: TEditorPosition) {
         const line = new SingleLineRenderer(this.container, content, at.line);
         this.lines.splice(at.line, 0, line);
         this.linesNumerator.increment();
     }
 
-    public deleteLine(at: TEditorPosition) {
-        this.lines[at.line]?.remove();
-        this.lines.splice(at.line, 1);
+    public deleteLine(line: number) {
+        this.lines[line]?.remove();
+        this.lines.splice(line, 1);
         this.linesNumerator.decrement();
     }
 

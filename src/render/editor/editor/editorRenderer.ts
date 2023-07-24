@@ -16,12 +16,16 @@ export default class EditorRenderer {
         return this.lines.getLineLength(line);
     }
 
+    public getLineContents(line: number) {
+        return this.lines.getLineContents(line);
+    }
+
     public addLine(content: string, at: TEditorPosition) {
         this.lines.addLine(content, at);
     }
 
-    public deleteLine(at: TEditorPosition) {
-        this.lines.deleteLine(at);
+    public deleteLine(line: number) {
+        this.lines.deleteLine(line);
     }
 
     public getWindowRect(): DOMRect {

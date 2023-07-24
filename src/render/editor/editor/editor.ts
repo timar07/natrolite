@@ -40,7 +40,7 @@ export default class EditorFacade {
         document.getSelection()?.removeAllRanges();
     }
 
-    public insertChar(char: string) {
+    public insertString(char: string) {
         this.view.insertCharAt(this.editorPosition, char)
     }
 
@@ -48,8 +48,8 @@ export default class EditorFacade {
         this.view.deleteCharAt(this.editorPosition);
     }
 
-    public deleteLine() {
-        this.view.deleteLine(this.editorPosition);
+    public deleteLine(line: number) {
+        this.view.deleteLine(line);
     }
 
     public addLine(content: string, at: TEditorPosition) {
@@ -70,6 +70,10 @@ export default class EditorFacade {
 
     public getLineLength(line: number) {
         return this.view.getLineLength(line)
+    }
+
+    public getLineContents(line: number) {
+        return this.view.getLineContents(line);
     }
 
     private handleKeyPress(event: KeyboardEvent) {

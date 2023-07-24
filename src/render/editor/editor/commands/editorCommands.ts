@@ -14,7 +14,7 @@ export class InsertChar implements IEditingCommand {
     ) {}
 
     execute(receiver: EditorFacade): void {
-        receiver.insertChar(this.char);
+        receiver.insertString(this.char);
         receiver.handleCursorOperation(new CursorOperations.MoveRight());
     }
 
@@ -49,7 +49,7 @@ export class Tab implements IEditingCommand {
     private static indent = 4;
 
     execute(receiver: EditorFacade): void {
-        receiver.insertChar(' '.repeat(Tab.indent));
+        receiver.insertString(' '.repeat(Tab.indent));
         receiver.handleCursorOperation(new CursorOperations.MoveRight(Tab.indent));
     }
 
@@ -69,19 +69,22 @@ export class Backspace implements IEditingCommand {
     execute(receiver: EditorFacade): void {
         if (this.isLineEmpty(receiver)) {
             if (!this.isLinesLeft(receiver)) return;
-            this.removeLine(receiver);
+            this.deleteLine(receiver);
             return;
         }
 
         this.strategy.execute(receiver);
     }
 
-    private removeLine(receiver: EditorFacade) {
-        receiver.deleteLine();
+    private deleteLine(receiver: EditorFacade) {
+        const line = receiver.getPosition().line;
+        const contents = receiver.getLineContents(line);
+        receiver.deleteLine(line);
         receiver.handleCursorOperation(new CursorOperations.MoveUp());
         receiver.handleCursorOperation(new CursorOperations.MoveRight(
             receiver.getCurrentLineLength()
         ));
+        receiver.insertString(contents);
     }
 
     private isLineEmpty(receiver: EditorFacade) {
