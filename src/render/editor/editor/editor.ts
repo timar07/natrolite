@@ -49,11 +49,8 @@ export default class EditorFacade {
         this.view.deleteLine(this.editorPosition);
     }
 
-    public addLine(content: string) {
-        this.view.addLine(content, {
-            line: this.getPosition().line+1,
-            col: this.getPosition().col
-        });
+    public addLine(content: string, at: TEditorPosition) {
+        this.view.addLine(content, at);
     }
 
     public handleCursorOperation(operation: IMoveOperation) {

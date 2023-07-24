@@ -51,7 +51,17 @@ export class Backspace implements IEditorCommand {
 
 export class Enter implements IEditorCommand {
     execute(receiver: EditorFacade): void {
-        receiver.addLine('');
+        if (receiver.getPosition().col > 0) {
+            receiver.addLine('', {
+                line: receiver.getPosition().line+1,
+                col: receiver.getPosition().col
+            });
+        } else {
+            receiver.addLine('', {
+                line: receiver.getPosition().line,
+                col: receiver.getPosition().col
+            });
+        }
         receiver.handleCursorOperation(new CursorOperations.CarriageReturn());
         receiver.handleCursorOperation(new CursorOperations.MoveDown());
     }
