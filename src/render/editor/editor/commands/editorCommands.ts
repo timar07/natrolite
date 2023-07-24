@@ -1,13 +1,14 @@
 import { CursorOperations } from "../../cursor/cursorOperations";
-import EditorFacade, { ICommand } from "../editor";
+import EditorFacade, { ICommand, IPrimitiveCommand } from "../editor";
 import { IBackspaceStrategy } from "./backspace";
 import { CursorMoveStrategy } from "./cursorMove";
 
-export interface IEditorCommand extends ICommand<EditorFacade> {}
+export interface IEditingCommand extends ICommand<EditorFacade> {}
+export interface IEditorCursorCommand extends IPrimitiveCommand<EditorFacade> {};
 
 export namespace EditorCommands {
 
-export class InsertChar implements IEditorCommand {
+export class InsertChar implements IEditingCommand {
     constructor(
         private char: string
     ) {}
@@ -22,7 +23,7 @@ export class InsertChar implements IEditorCommand {
     }
 }
 
-export class Enter implements IEditorCommand {
+export class Enter implements IEditingCommand {
     execute(receiver: EditorFacade): void {
         if (receiver.getPosition().col > 0) {
             receiver.addLine('', {
@@ -44,7 +45,7 @@ export class Enter implements IEditorCommand {
     }
 }
 
-export class Tab implements IEditorCommand {
+export class Tab implements IEditingCommand {
     private static indent = 4;
 
     execute(receiver: EditorFacade): void {
@@ -60,39 +61,7 @@ export class Tab implements IEditorCommand {
     }
 }
 
-export class CursorMove implements IEditorCommand {
-    constructor(
-        private strategy: CursorMoveStrategy
-    ) {}
-
-    execute(receiver: EditorFacade): void {
-        this.strategy.move(receiver);
-        this.normalizeHorizontalPosition(receiver);
-    }
-
-    // Prevents the cursor from being in a non-existing position
-    private normalizeHorizontalPosition(receiver: EditorFacade) {
-        if (!this.isOutOfLine(receiver)) return;
-
-        receiver.handleCursorOperation(
-            new CursorOperations.MoveLeft(this.getOverflow(receiver))
-        );
-    }
-
-    private isOutOfLine(receiver: EditorFacade) {
-        return receiver.getCurrentLineLength() < receiver.getPosition().col
-    }
-
-    private getOverflow(receiver: EditorFacade) {
-        return receiver.getPosition().col - receiver.getCurrentLineLength()
-    }
-
-    undo(receiver: EditorFacade): void {
-        throw new Error("Method not implemented.");
-    }
-}
-
-export class Backspace implements IEditorCommand {
+export class Backspace implements IEditingCommand {
     constructor(
         private strategy: IBackspaceStrategy
     ) {}
@@ -128,9 +97,36 @@ export class Backspace implements IEditorCommand {
     }
 }
 
-export class NoOperation implements IEditorCommand {
-    execute(receiver: EditorFacade): void {}
-    undo(): void {}
+export class CursorMove implements IEditingCommand {
+    constructor(
+        private strategy: CursorMoveStrategy
+    ) {}
+
+    execute(receiver: EditorFacade): void {
+        this.strategy.move(receiver);
+        this.normalizeHorizontalPosition(receiver);
+    }
+
+    // Prevents the cursor from being in a non-existing position
+    private normalizeHorizontalPosition(receiver: EditorFacade) {
+        if (!this.isOutOfLine(receiver)) return;
+
+        receiver.handleCursorOperation(
+            new CursorOperations.MoveLeft(this.getOverflow(receiver))
+        );
+    }
+
+    private isOutOfLine(receiver: EditorFacade) {
+        return receiver.getCurrentLineLength() < receiver.getPosition().col
+    }
+
+    private getOverflow(receiver: EditorFacade) {
+        return receiver.getPosition().col - receiver.getCurrentLineLength()
+    }
+
+    undo(receiver: EditorFacade): void {
+        throw new Error("Method not implemented.");
+    }
 }
 
 }

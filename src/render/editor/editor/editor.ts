@@ -8,8 +8,11 @@ export type TEditorPosition = {
     col: number
 };
 
-export interface ICommand<T> {
+export interface IPrimitiveCommand<T> {
     execute(receiver: T): void;
+}
+
+export interface ICommand<T> extends IPrimitiveCommand<T> {
     undo(receiver: T): void;
 }
 

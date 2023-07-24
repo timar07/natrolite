@@ -1,6 +1,6 @@
 import { LineDiscard, SingleChar } from "./commands/backspace";
 import { Down, Left, LineEnd, LineStart, Right, Up } from "./commands/cursorMove";
-import { EditorCommands, IEditorCommand } from "./commands/editorCommands";
+import { EditorCommands, IEditingCommand } from "./commands/editorCommands";
 
 export class EditorKeyboardHandler {
     getCommand(event: KeyboardEvent) {
@@ -22,11 +22,11 @@ export class EditorKeyboardHandler {
 }
 
 interface IKeybardHandler {
-    getCommand(event: KeyboardEvent): IEditorCommand | undefined;
+    getCommand(event: KeyboardEvent): IEditingCommand | undefined;
 }
 
 class SimpleOperation implements IKeybardHandler {
-    getCommand(event: KeyboardEvent): IEditorCommand | undefined {
+    getCommand(event: KeyboardEvent): IEditingCommand | undefined {
         switch (event.key) {
             case 'Backspace':
                 return new EditorCommands.Backspace(new SingleChar());
@@ -58,7 +58,7 @@ class SimpleOperation implements IKeybardHandler {
 }
 
 class ControlOperation implements IKeybardHandler {
-    getCommand(event: KeyboardEvent): IEditorCommand | undefined {
+    getCommand(event: KeyboardEvent): IEditingCommand | undefined {
         switch (event.key) {
             case 'ArrowLeft':
                 return new EditorCommands.CursorMove(new LineStart());
@@ -71,7 +71,7 @@ class ControlOperation implements IKeybardHandler {
 }
 
 class ShiftOperation implements IKeybardHandler {
-    getCommand(event: KeyboardEvent): IEditorCommand | undefined {
+    getCommand(event: KeyboardEvent): IEditingCommand | undefined {
         return undefined;
     }
 }
