@@ -1,7 +1,7 @@
 import { CursorOperations } from "../cursor/cursorOperations";
 import EditorFacade, { ICommand } from "./editor";
 
-interface IEditorCommand extends ICommand<EditorFacade> {}
+export interface IEditorCommand extends ICommand<EditorFacade> {}
 
 export namespace EditorCommands {
 
@@ -15,7 +15,7 @@ export class InsertChar implements IEditorCommand {
         receiver.handleCursorOperation(new CursorOperations.MoveRight());
     }
 
-    undo(): void {
+    undo(receiver: EditorFacade): void {
         throw new Error("Method not implemented.");
     }
 }
@@ -72,13 +72,18 @@ export class Enter implements IEditorCommand {
 }
 
 export class Tab implements IEditorCommand {
+    private static indent = 4;
+
     execute(receiver: EditorFacade): void {
-        receiver.insertChar(' '.repeat(4));
-        receiver.handleCursorOperation(new CursorOperations.MoveRight(4));
+        receiver.insertChar(' '.repeat(Tab.indent));
+        receiver.handleCursorOperation(new CursorOperations.MoveRight(Tab.indent));
     }
 
-    undo(): void {
-        throw new Error("Method not implemented.");
+    undo(receiver: EditorFacade): void {
+        for(let i = 0; i < Tab.indent; i++)
+            receiver.deleteChar();
+
+        receiver.handleCursorOperation(new CursorOperations.MoveLeft(Tab.indent));
     }
 }
 
@@ -144,6 +149,72 @@ export class ArrowLeft implements IEditorCommand {
         receiver.handleCursorOperation(new CursorOperations.MoveLeft());
     }
 
+    undo(): void {
+        throw new Error("Method not implemented.");
+    }
+}
+
+export class MoveLineStart implements IEditorCommand {
+    execute(receiver: EditorFacade): void {
+        receiver.handleCursorOperation(
+            new CursorOperations.MoveLeft(
+                receiver.getPosition().col
+            )
+        );
+    }
+
+    undo(receiver: EditorFacade): void {
+        throw new Error("Method not implemented.");
+    }
+}
+
+export class MoveLineEnd implements IEditorCommand {
+    execute(receiver: EditorFacade): void {
+        receiver.handleCursorOperation(
+            new CursorOperations.MoveRight(
+                receiver.getCurrentLineLength()
+            )
+        );
+    }
+
+    undo(receiver: EditorFacade): void {
+        throw new Error("Method not implemented.");
+    }
+}
+
+export class ClearLine implements IEditorCommand {
+    execute(receiver: EditorFacade): void {
+        if (this.isLineEmpty(receiver)) {
+            if (!this.isLinesLeft(receiver)) return;
+            this.removeLine(receiver);
+            return;
+        }
+
+        this.clearLine(receiver);
+    }
+
+    private removeLine(receiver: EditorFacade) {
+        receiver.deleteLine();
+        receiver.handleCursorOperation(new CursorOperations.MoveUp());
+        receiver.handleCursorOperation(new CursorOperations.MoveRight(
+            receiver.getCurrentLineLength()
+        ));
+    }
+
+    private clearLine(receiver: EditorFacade) {
+        while (receiver.getPosition().col > 0) {
+            receiver.deleteChar();
+            receiver.handleCursorOperation(new CursorOperations.MoveLeft());
+        }
+    }
+
+    private isLineEmpty(receiver: EditorFacade) {
+        return receiver.getPosition().col <= 0
+    }
+
+    private isLinesLeft(receiver: EditorFacade) {
+        return receiver.getPosition().line > 0
+    }
     undo(): void {
         throw new Error("Method not implemented.");
     }

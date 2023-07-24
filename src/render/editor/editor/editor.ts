@@ -1,6 +1,6 @@
 import Cursor from "../cursor/cursor";
 import { IMoveOperation } from "../cursor/cursorOperations";
-import { EditorCommands } from "./editorCommands";
+import { EditorKeyboardHandler } from "./editorKeyboard";
 import EditorRenderer from "./editorRenderer";
 
 export type TEditorPosition = {
@@ -10,7 +10,7 @@ export type TEditorPosition = {
 
 export interface ICommand<T> {
     execute(receiver: T): void;
-    undo(): void;
+    undo(receiver: T): void;
 }
 
 export default class EditorFacade {
@@ -71,48 +71,7 @@ export default class EditorFacade {
 
     private handleKeyPress(event: KeyboardEvent) {
         event.preventDefault();
-        if (event.shiftKey) {
-            this.getShiftOperation(event.key)?.execute(this);
-            return;
-        }
-
-        this.getSimpleOperation(event.key)?.execute(this);
-    }
-
-    private getShiftOperation(key: string) {
-        switch (key) {
-        }
-
-        if (this.isPrintableChar(key)) {
-            return new EditorCommands.InsertChar(key.toString());
-        }
-    }
-
-    private getSimpleOperation(key: string) {
-        switch (key) {
-            case 'Backspace':
-                return new EditorCommands.Backspace();
-            case 'ArrowLeft':
-                return new EditorCommands.ArrowLeft();
-            case 'ArrowRight':
-                return new EditorCommands.ArrowRight();
-            case 'ArrowDown':
-                return new EditorCommands.ArrowDown();
-            case 'ArrowUp':
-                return new EditorCommands.ArrowUp();
-            case 'Enter':
-                return new EditorCommands.Enter();
-            case 'Tab':
-                return new EditorCommands.Tab();
-        }
-
-        if (this.isPrintableChar(key)) {
-            return new EditorCommands.InsertChar(key.toString());
-        }
-    }
-
-    private isPrintableChar(key: string) {
-        return key.length == 1;
+        new EditorKeyboardHandler().getCommand(event)?.execute(this);
     }
 
     public getPosition(): TEditorPosition {
