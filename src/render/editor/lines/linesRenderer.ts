@@ -48,9 +48,13 @@ export default class LinesRenderer {
         return this.lines[line]?.getTextContent() || '';
     }
 
-    public addLine(content: string, at: TEditorPosition) {
-        const line = new SingleLineRenderer(this.container, content, at.line);
-        this.lines.splice(at.line, 0, line);
+    public setLineContent(content: string, line: number) {
+        this.lines[line]?.updateTextContent(content);
+    }
+
+    public addLine(content: string, at: number) {
+        const line = new SingleLineRenderer(this.container, content, at);
+        this.lines.splice(at, 0, line);
         this.linesNumerator.increment();
     }
 

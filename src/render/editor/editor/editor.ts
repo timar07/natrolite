@@ -33,7 +33,7 @@ export default class EditorFacade {
         };
 
         document.onkeydown = this.handleKeyPress.bind(this);
-        this.view.addLine('', this.editorPosition);
+        this.view.addLine('', this.editorPosition.line);
     }
 
     public resetSelection() {
@@ -52,7 +52,7 @@ export default class EditorFacade {
         this.view.deleteLine(line);
     }
 
-    public addLine(content: string, at: TEditorPosition) {
+    public addLine(content: string, at: number) {
         this.view.addLine(content, at);
     }
 
@@ -72,13 +72,12 @@ export default class EditorFacade {
         return this.view.getLineLength(line)
     }
 
-    public getLineContents(line: number) {
+    public getLineContent(line: number) {
         return this.view.getLineContents(line);
     }
 
-    private handleKeyPress(event: KeyboardEvent) {
-        event.preventDefault();
-        new EditorKeyboardHandler().getCommand(event)?.execute(this);
+    public setLineContent(content: string, line: number) {
+        return this.view.setLineContent(content, line);
     }
 
     public getPosition(): TEditorPosition {
@@ -87,6 +86,11 @@ export default class EditorFacade {
             line: relativeRect.top / relativeRect.height,
             col: relativeRect.left / relativeRect.width
         }
+    }
+
+    private handleKeyPress(event: KeyboardEvent) {
+        event.preventDefault();
+        new EditorKeyboardHandler().getCommand(event)?.execute(this);
     }
 
     private getRelativeCursorRect(): DOMRect {

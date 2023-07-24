@@ -20,7 +20,11 @@ export default class EditorRenderer {
         return this.lines.getLineContents(line);
     }
 
-    public addLine(content: string, at: TEditorPosition) {
+    public setLineContent(content: string, line: number) {
+        return this.lines.setLineContent(content, line);
+    }
+
+    public addLine(content: string, at: number) {
         this.lines.addLine(content, at);
     }
 

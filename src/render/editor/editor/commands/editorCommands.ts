@@ -25,19 +25,21 @@ export class InsertChar implements IEditingCommand {
 
 export class Enter implements IEditingCommand {
     execute(receiver: EditorFacade): void {
-        if (receiver.getPosition().col > 0) {
-            receiver.addLine('', {
-                line: receiver.getPosition().line+1,
-                col: receiver.getPosition().col
-            });
-        } else {
-            receiver.addLine('', {
-                line: receiver.getPosition().line,
-                col: receiver.getPosition().col
-            });
-        }
+        this.breakLine(receiver);
         receiver.handleCursorOperation(new CursorOperations.CarriageReturn());
         receiver.handleCursorOperation(new CursorOperations.MoveDown());
+    }
+
+    private breakLine(receiver: EditorFacade) {
+        const pos = receiver.getPosition();
+        const content = receiver.getLineContent(pos.line);
+        receiver.setLineContent(content.slice(0, pos.col), pos.line);
+        receiver.addLine(content.slice(pos.col), this.getNextLineIndex(receiver));
+    }
+
+    private getNextLineIndex(receiver: EditorFacade) {
+        const dx = receiver.getPosition().col == 0 ? 0: 1;
+        return receiver.getPosition().line + dx;
     }
 
     undo(): void {
@@ -78,7 +80,7 @@ export class Backspace implements IEditingCommand {
 
     private deleteLine(receiver: EditorFacade) {
         const line = receiver.getPosition().line;
-        const contents = receiver.getLineContents(line);
+        const contents = receiver.getLineContent(line);
         receiver.deleteLine(line);
         receiver.handleCursorOperation(new CursorOperations.MoveUp());
         receiver.handleCursorOperation(new CursorOperations.MoveRight(
