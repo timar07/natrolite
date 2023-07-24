@@ -1,4 +1,6 @@
-import { EditorCommands, IEditorCommand } from "./editorCommands";
+import { LineDiscard, SingleChar } from "./commands/backspace";
+import { Down, Left, LineEnd, LineStart, Right, Up } from "./commands/cursorMove";
+import { EditorCommands, IEditorCommand } from "./commands/editorCommands";
 
 export class EditorKeyboardHandler {
     getCommand(event: KeyboardEvent) {
@@ -27,15 +29,15 @@ class SimpleOperation implements IKeybardHandler {
     getCommand(event: KeyboardEvent): IEditorCommand | undefined {
         switch (event.key) {
             case 'Backspace':
-                return new EditorCommands.Backspace();
+                return new EditorCommands.Backspace(new SingleChar());
             case 'ArrowLeft':
-                return new EditorCommands.ArrowLeft();
+                return new EditorCommands.CursorMove(new Left());
             case 'ArrowRight':
-                return new EditorCommands.ArrowRight();
+                return new EditorCommands.CursorMove(new Right());
             case 'ArrowDown':
-                return new EditorCommands.ArrowDown();
+                return new EditorCommands.CursorMove(new Down());
             case 'ArrowUp':
-                return new EditorCommands.ArrowUp();
+                return new EditorCommands.CursorMove(new Up());
             case 'Enter':
                 return new EditorCommands.Enter();
             case 'Tab':
@@ -59,11 +61,11 @@ class ControlOperation implements IKeybardHandler {
     getCommand(event: KeyboardEvent): IEditorCommand | undefined {
         switch (event.key) {
             case 'ArrowLeft':
-                return new EditorCommands.MoveLineStart();
+                return new EditorCommands.CursorMove(new LineStart());
             case 'ArrowRight':
-                return new EditorCommands.MoveLineEnd();
+                return new EditorCommands.CursorMove(new LineEnd());
             case 'Backspace':
-                return new EditorCommands.ClearLine();
+                return new EditorCommands.Backspace(new LineDiscard());
         }
     }
 }

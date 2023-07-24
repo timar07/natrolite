@@ -1,5 +1,7 @@
-import { CursorOperations } from "../cursor/cursorOperations";
-import EditorFacade, { ICommand } from "./editor";
+import { CursorOperations } from "../../cursor/cursorOperations";
+import EditorFacade, { ICommand } from "../editor";
+import { IBackspaceStrategy } from "./backspace";
+import { CursorMoveStrategy } from "./cursorMove";
 
 export interface IEditorCommand extends ICommand<EditorFacade> {}
 
@@ -16,35 +18,6 @@ export class InsertChar implements IEditorCommand {
     }
 
     undo(receiver: EditorFacade): void {
-        throw new Error("Method not implemented.");
-    }
-}
-
-export class Backspace implements IEditorCommand {
-    execute(receiver: EditorFacade): void {
-        if (this.isLineEmpty(receiver)) {
-            if (!this.isLinesLeft(receiver)) return;
-            receiver.deleteLine();
-            receiver.handleCursorOperation(new CursorOperations.MoveUp());
-            receiver.handleCursorOperation(new CursorOperations.MoveRight(
-                receiver.getCurrentLineLength()
-            ));
-            return;
-        }
-
-        receiver.deleteChar();
-        receiver.handleCursorOperation(new CursorOperations.MoveLeft());
-    }
-
-    private isLineEmpty(receiver: EditorFacade) {
-        return receiver.getPosition().col <= 0
-    }
-
-    private isLinesLeft(receiver: EditorFacade) {
-        return receiver.getPosition().line > 0
-    }
-
-    undo(): void {
         throw new Error("Method not implemented.");
     }
 }
@@ -87,10 +60,13 @@ export class Tab implements IEditorCommand {
     }
 }
 
-export class ArrowUp implements IEditorCommand {
+export class CursorMove implements IEditorCommand {
+    constructor(
+        private strategy: CursorMoveStrategy
+    ) {}
+
     execute(receiver: EditorFacade): void {
-        if (receiver.getPosition().line == 0) return;
-        receiver.handleCursorOperation(new CursorOperations.MoveUp());
+        this.strategy.move(receiver);
         this.normalizeHorizontalPosition(receiver);
     }
 
@@ -111,78 +87,16 @@ export class ArrowUp implements IEditorCommand {
         return receiver.getPosition().col - receiver.getCurrentLineLength()
     }
 
-    undo(): void {
-        throw new Error("Method not implemented.");
-    }
-}
-
-export class ArrowDown implements IEditorCommand {
-    execute(receiver: EditorFacade): void {
-        if (receiver.getPosition().line == receiver.getLastLineIndex())
-            return;
-        receiver.handleCursorOperation(new CursorOperations.MoveDown());
-    }
-
-    undo(): void {
-        throw new Error("Method not implemented.");
-    }
-}
-
-export class ArrowRight implements IEditorCommand {
-    execute(receiver: EditorFacade): void {
-        receiver.resetSelection();
-        if (receiver.getPosition().col >= receiver.getCurrentLineLength())
-            return;
-
-        receiver.handleCursorOperation(new CursorOperations.MoveRight());
-    }
-
-    undo(): void {
-        throw new Error("Method not implemented.");
-    }
-}
-
-export class ArrowLeft implements IEditorCommand {
-    execute(receiver: EditorFacade): void {
-        receiver.resetSelection();
-        if (receiver.getPosition().col == 0) return;
-        receiver.handleCursorOperation(new CursorOperations.MoveLeft());
-    }
-
-    undo(): void {
-        throw new Error("Method not implemented.");
-    }
-}
-
-export class MoveLineStart implements IEditorCommand {
-    execute(receiver: EditorFacade): void {
-        receiver.handleCursorOperation(
-            new CursorOperations.MoveLeft(
-                receiver.getPosition().col
-            )
-        );
-    }
-
     undo(receiver: EditorFacade): void {
         throw new Error("Method not implemented.");
     }
 }
 
-export class MoveLineEnd implements IEditorCommand {
-    execute(receiver: EditorFacade): void {
-        receiver.handleCursorOperation(
-            new CursorOperations.MoveRight(
-                receiver.getCurrentLineLength()
-            )
-        );
-    }
+export class Backspace implements IEditorCommand {
+    constructor(
+        private strategy: IBackspaceStrategy
+    ) {}
 
-    undo(receiver: EditorFacade): void {
-        throw new Error("Method not implemented.");
-    }
-}
-
-export class ClearLine implements IEditorCommand {
     execute(receiver: EditorFacade): void {
         if (this.isLineEmpty(receiver)) {
             if (!this.isLinesLeft(receiver)) return;
@@ -190,7 +104,7 @@ export class ClearLine implements IEditorCommand {
             return;
         }
 
-        this.clearLine(receiver);
+        this.strategy.execute(receiver);
     }
 
     private removeLine(receiver: EditorFacade) {
@@ -201,13 +115,6 @@ export class ClearLine implements IEditorCommand {
         ));
     }
 
-    private clearLine(receiver: EditorFacade) {
-        while (receiver.getPosition().col > 0) {
-            receiver.deleteChar();
-            receiver.handleCursorOperation(new CursorOperations.MoveLeft());
-        }
-    }
-
     private isLineEmpty(receiver: EditorFacade) {
         return receiver.getPosition().col <= 0
     }
@@ -215,6 +122,7 @@ export class ClearLine implements IEditorCommand {
     private isLinesLeft(receiver: EditorFacade) {
         return receiver.getPosition().line > 0
     }
+
     undo(): void {
         throw new Error("Method not implemented.");
     }
