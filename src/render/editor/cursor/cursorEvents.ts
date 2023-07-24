@@ -7,17 +7,18 @@ interface ICursorEventHandler {
 
 export class MouseDown implements ICursorEventHandler {
     handle(event: MouseEvent, state: CursorState): void {
-        if (this.isOutsideOfText(event)) {
-            const target = event.target as HTMLElement;
-            const rect = RangeUtil.getCharRect(
-                target.childNodes[0],
-                (target.textContent?.length || 1) - 1
-            );
-            state.setFromRect(rect);
-            return;
-        }
+        state.setFromRect(
+            this.isOutsideOfText(event)
+            ? this.getLastRect(event.target as HTMLElement)
+            : this.getClickedRect(event)
+        );
+    }
 
-        state.setFromRect(this.getClickedRect(event));
+    private getLastRect(target: HTMLElement) {
+        return RangeUtil.getCharRect(
+            target.childNodes[0],
+            (target.textContent?.length || 1) - 1
+        );
     }
 
     private isOutsideOfText(event: MouseEvent) {
@@ -25,7 +26,9 @@ export class MouseDown implements ICursorEventHandler {
     }
 
     protected getClickedRect(event: MouseEvent) {
-        // @ts-ignore
+        if (event.target == null || !(event.target instanceof Element))
+            return null;
+
         const target = event.target?.childNodes[0];
         const chars = (target.textContent || '').split('');
 
@@ -49,14 +52,14 @@ export class MouseDown implements ICursorEventHandler {
         return null;
     }
 
-    private isCursorBefore(rect: DOMRect, clientX: number, clientY: number) {
-        return rect.left <= clientX && (rect.left + rect.width/2) >= clientX;
+    private isCursorBefore(rect: DOMRect, x: number, y: number) {
+        return rect.left <= x && (rect.left + rect.width/2) >= x;
     }
 
-    private isInRectBounds(rect: DOMRect | undefined, clientX: number, clientY: number) {
+    private isInRectBounds(rect: DOMRect | undefined, x: number, y: number) {
         if (!rect) return false;
-        const isInVerticalBounds = rect.top < clientY && rect.bottom > clientY;
-        const isInHorizontalBounds = rect.left < clientX && rect.right > clientX;
+        const isInVerticalBounds = rect.top < y && rect.bottom > y;
+        const isInHorizontalBounds = rect.left < x && rect.right > x;
         return isInVerticalBounds && isInHorizontalBounds;
     }
 }
