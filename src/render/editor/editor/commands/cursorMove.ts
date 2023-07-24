@@ -33,7 +33,8 @@ export class Left implements CursorMoveStrategy {
     move(receiver: EditorFacade): void {
         receiver.resetSelection();
         if (this.isAtStart(receiver)) {
-            this.moveToPrevLine(receiver);
+            if (receiver.getPosition().line != 0)
+                this.moveToPrevLine(receiver);
             return;
         }
         receiver.handleCursorOperation(new CursorOperations.MoveLeft());
@@ -61,7 +62,8 @@ export class Right implements CursorMoveStrategy {
     move(receiver: EditorFacade): void {
         receiver.resetSelection();
         if (this.isOutOfLine(receiver)) {
-            this.moveToNextLine(receiver);
+            if (receiver.getPosition().line != receiver.getLastLineIndex())
+                this.moveToNextLine(receiver);
             return;
         }
 
