@@ -25,7 +25,26 @@ interface IKeybardHandler {
     getCommand(event: KeyboardEvent): IEditingCommand | undefined;
 }
 
-class SimpleOperation implements IKeybardHandler {
+class ControlOperation implements IKeybardHandler {
+    getCommand(event: KeyboardEvent): IEditingCommand | undefined {
+        switch (event.key) {
+            case 'ArrowLeft':
+                return new EditorCommands.CursorMove(new LineStart());
+            case 'ArrowRight':
+                return new EditorCommands.CursorMove(new LineEnd());
+            case 'Backspace':
+                return new EditorCommands.Backspace(new LineDiscard());
+        }
+    }
+}
+
+abstract class TypableOperation {
+    protected isPrintableChar(key: string) {
+        return key.length == 1;
+    }
+}
+
+class SimpleOperation extends TypableOperation implements IKeybardHandler {
     getCommand(event: KeyboardEvent): IEditingCommand | undefined {
         switch (event.key) {
             case 'Backspace':
@@ -50,28 +69,13 @@ class SimpleOperation implements IKeybardHandler {
             }
         }
     }
-
-
-    private isPrintableChar(key: string) {
-        return key.length == 1;
-    }
 }
 
-class ControlOperation implements IKeybardHandler {
+class ShiftOperation extends TypableOperation implements IKeybardHandler {
     getCommand(event: KeyboardEvent): IEditingCommand | undefined {
-        switch (event.key) {
-            case 'ArrowLeft':
-                return new EditorCommands.CursorMove(new LineStart());
-            case 'ArrowRight':
-                return new EditorCommands.CursorMove(new LineEnd());
-            case 'Backspace':
-                return new EditorCommands.Backspace(new LineDiscard());
-        }
-    }
-}
-
-class ShiftOperation implements IKeybardHandler {
-    getCommand(event: KeyboardEvent): IEditingCommand | undefined {
-        return undefined;
+        if (!this.isPrintableChar(event.key))
+            return;
+        // event.key is capitalized by default, so we don't need to use .toUpperCase()
+        return new EditorCommands.InsertChar(event.key.toString());
     }
 }
