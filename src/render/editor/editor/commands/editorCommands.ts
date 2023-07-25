@@ -34,11 +34,7 @@ export class Enter implements IEditingCommand {
         const pos = receiver.getPosition();
         const content = receiver.getLineContent(pos.line);
         receiver.setLineContent(content.slice(0, pos.col), pos.line);
-        receiver.addLine(content.slice(pos.col), this.getNextLineIndex(receiver));
-    }
-
-    private getNextLineIndex(receiver: EditorFacade) {
-        return receiver.getPosition().line;
+        receiver.addLine(content.slice(pos.col), receiver.getPosition().line + 1);
     }
 
     undo(): void {
