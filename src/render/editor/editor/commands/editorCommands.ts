@@ -38,8 +38,7 @@ export class Enter implements IEditingCommand {
     }
 
     private getNextLineIndex(receiver: EditorFacade) {
-        const dx = receiver.getPosition().col == 0 ? 0: 1;
-        return receiver.getPosition().line + dx;
+        return receiver.getPosition().line;
     }
 
     undo(): void {
