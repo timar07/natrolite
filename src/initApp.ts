@@ -1,3 +1,3 @@
-import EditorFacade from "./render/editor/editor/editor";
+import EditorFacade from "./render/editor/editor";
 
 new EditorFacade();

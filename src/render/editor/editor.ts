@@ -1,11 +1,13 @@
-import Cursor from "../cursor/cursor";
-import { IMoveOperation } from "../cursor/cursorOperations";
-import { EditorKeyboardHandler } from "./editorKeyboard";
-import EditorRenderer from "./editorRenderer";
+import Cursor from "./view/cursor/cursor";
+import { IMoveOperation } from "./view/cursor/cursorOperations";
+import { EditorKeyboardHandlerFactory } from "./editorKeyboard";
+import EditorRenderer from "./editor/editorRenderer";
+import { DocumentProcessor } from "./documentProcessor";
 
 export type TEditorPosition = {
     line: number,
-    col: number
+    col: number,
+    offset: number
 };
 
 export interface IPrimitiveCommand<T> {
@@ -18,14 +20,19 @@ export interface ICommand<T> extends IPrimitiveCommand<T> {
 
 export default class EditorFacade {
     private view = new EditorRenderer();
+
     private cursor = new Cursor(
         this.view.getElement(),
         new DOMRect(100, 50, 8, 16.5) // FIXME: Hardcoded
     );
+
     private editorPosition: TEditorPosition = {
         line: 0,
-        col: 0
+        col: 0,
+        offset: 0
     };
+
+    private document = new DocumentProcessor();
 
     constructor() {
         this.cursor.onUpdate = () => {
@@ -34,18 +41,20 @@ export default class EditorFacade {
 
         document.onkeydown = this.handleKeyPress.bind(this);
         this.view.addLine('', this.editorPosition.line);
+        this.document.onChange = this.view.renderChanges;
+    }
+
+    public getDocument() {
+        return this.document;
     }
 
     public resetSelection() {
         document.getSelection()?.removeAllRanges();
     }
 
-    public insertString(char: string) {
-        this.view.insertCharAt(this.editorPosition, char)
-    }
 
-    public deleteChar() {
-        this.view.deleteCharAt(this.editorPosition);
+    public editLine(line: number, strategy: LineEditingStrategy) {
+
     }
 
     public deleteLine(line: number) {
@@ -83,14 +92,15 @@ export default class EditorFacade {
     public getPosition(): TEditorPosition {
         const relativeRect = this.getRelativeCursorRect();
         return {
-            line: relativeRect.top / relativeRect.height,
-            col: relativeRect.left / relativeRect.width
+            line: (relativeRect.top + this.view.getElement().scrollTop) / relativeRect.height,
+            col: relativeRect.left / relativeRect.width,
+            offset: 0
         }
     }
 
     private handleKeyPress(event: KeyboardEvent) {
         event.preventDefault();
-        new EditorKeyboardHandler().getCommand(event)?.execute(this);
+        new EditorKeyboardHandlerFactory(this).getCommand(event)?.execute(this);
     }
 
     private getRelativeCursorRect(): DOMRect {
@@ -103,5 +113,27 @@ export default class EditorFacade {
             cursor.width,
             cursor.height
         );
+    }
+}
+
+interface LineEditingStrategy {
+    edit(pos: TEditorPosition, text: string): string;
+}
+
+export class Insert implements LineEditingStrategy {
+    constructor(
+        private char: string
+    ) {}
+
+    edit(pos: TEditorPosition, text: string) {
+        return text.slice(0, pos.col) + this.char + text.slice(pos.col);
+    }
+}
+
+export class Delete implements LineEditingStrategy {
+    constructor() {}
+
+    edit(pos: TEditorPosition, text: string) {
+        return text.slice(0, pos.col-1) + text.slice(pos.col);
     }
 }

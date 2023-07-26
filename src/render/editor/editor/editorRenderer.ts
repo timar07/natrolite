@@ -1,6 +1,7 @@
-import LinesRenderer, { Delete, Insert } from "../lines/linesRenderer";
-import { TEditorPosition } from "./editor";
+import LinesRenderer from "../view/lines/linesRenderer";
+import { TEditorPosition } from "../editor";
 import "./editor.css";
+import { DocumentEvent, Insert } from "../documentProcessor";
 
 export default class EditorRenderer {
     private root = document.querySelector<HTMLElement>('.TextEditor') as HTMLElement;
@@ -9,6 +10,9 @@ export default class EditorRenderer {
     );
 
     constructor() {}
+
+    public renderChanges(ev: DocumentEvent) {
+    }
 
     public getElement() { return this.root; }
 
@@ -37,11 +41,11 @@ export default class EditorRenderer {
     }
 
     public insertCharAt(pos: TEditorPosition, char: string) {
-        this.lines.edit(pos, new Insert(char));
+        // this.lines.edit(pos, new Insert(char));
     }
 
     public deleteCharAt(pos: TEditorPosition) {
-        this.lines.edit(pos, new Delete());
+        // this.lines.edit(pos, new Delete());
     }
 
     public getLastLineIndex() {

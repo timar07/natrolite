@@ -1,5 +1,5 @@
 import EditorFacade from "../editor";
-import { CursorOperations } from "../../cursor/cursorOperations";
+import { CursorOperations } from "../view/cursor/cursorOperations";
 
 export interface CursorMoveStrategy {
     move(receiver: EditorFacade): void;

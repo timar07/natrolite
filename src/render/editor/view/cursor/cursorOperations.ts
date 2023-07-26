@@ -1,4 +1,4 @@
-import { ICommand } from "../editor/editor";
+import { ICommand } from "../../editor";
 import Cursor from "./cursor";
 
 export interface IMoveOperation extends ICommand<Cursor> {

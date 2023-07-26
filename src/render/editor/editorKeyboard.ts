@@ -1,19 +1,24 @@
-import { LineDiscard, SingleChar } from "./commands/backspace";
+import { Backspace, LineDiscard, SingleChar } from "./commands/backspaceCommand";
 import { Down, Left, LineEnd, LineStart, Right, Up } from "./commands/cursorMove";
 import { EditorCommands, IEditingCommand } from "./commands/editorCommands";
+import EditorFacade from "./editor";
 
-export class EditorKeyboardHandler {
+export class EditorKeyboardHandlerFactory {
+    constructor(
+        private receiver: EditorFacade
+    ) {}
+
     getCommand(event: KeyboardEvent) {
         return this.getOperation(event).getCommand(event);
     }
 
     private getOperation(event: KeyboardEvent) {
         if (this.isControlKey(event))
-            return new ControlOperation();
+            return new ControlOperation(this.receiver);
         else if (event.shiftKey)
             return new ShiftOperation();
 
-        return new SimpleOperation();
+        return new SimpleOperation(this.receiver);
     }
 
     private isControlKey(event: KeyboardEvent) {
@@ -21,11 +26,15 @@ export class EditorKeyboardHandler {
     }
 }
 
-interface IKeybardHandler {
+interface KeyboardHandler {
     getCommand(event: KeyboardEvent): IEditingCommand | undefined;
 }
 
-class ControlOperation implements IKeybardHandler {
+class ControlOperation implements KeyboardHandler {
+    constructor(
+        private receiver: EditorFacade
+    ) {}
+
     getCommand(event: KeyboardEvent): IEditingCommand | undefined {
         switch (event.key) {
             case 'ArrowLeft':
@@ -33,7 +42,7 @@ class ControlOperation implements IKeybardHandler {
             case 'ArrowRight':
                 return new EditorCommands.CursorMove(new LineEnd());
             case 'Backspace':
-                return new EditorCommands.Backspace(new LineDiscard());
+                return new Backspace(this.receiver, new LineDiscard());
         }
     }
 }
@@ -44,11 +53,17 @@ abstract class TypableOperation {
     }
 }
 
-class SimpleOperation extends TypableOperation implements IKeybardHandler {
+class SimpleOperation extends TypableOperation implements KeyboardHandler {
+    constructor(
+        private receiver: EditorFacade
+    ) {
+        super()
+    }
+
     getCommand(event: KeyboardEvent): IEditingCommand | undefined {
         switch (event.key) {
             case 'Backspace':
-                return new EditorCommands.Backspace(new SingleChar());
+                return new Backspace(this.receiver, new SingleChar());
             case 'ArrowLeft':
                 return new EditorCommands.CursorMove(new Left());
             case 'ArrowRight':
@@ -71,7 +86,7 @@ class SimpleOperation extends TypableOperation implements IKeybardHandler {
     }
 }
 
-class ShiftOperation extends TypableOperation implements IKeybardHandler {
+class ShiftOperation extends TypableOperation implements KeyboardHandler {
     getCommand(event: KeyboardEvent): IEditingCommand | undefined {
         if (!this.isPrintableChar(event.key))
             return;

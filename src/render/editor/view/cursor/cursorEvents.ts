@@ -1,4 +1,4 @@
-import RangeUtil from "../rangeUtil";
+import RangeUtil from "../../core/rangeUtil";
 import CursorState from "./cursorState";
 
 interface ICursorEventHandler {
