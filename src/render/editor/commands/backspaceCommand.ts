@@ -1,8 +1,8 @@
 import { CursorOperations } from "../view/cursor/cursorOperations";
-import { IEditingCommand } from "./editorCommands";
+import { EditingCommand } from "./editorCommands";
 import EditorFacade from "../editor";
 
-export class Backspace implements IEditingCommand {
+export class Backspace implements EditingCommand {
     constructor(
         private receiver: EditorFacade,
         private strategy: IBackspaceStrategy
@@ -19,23 +19,23 @@ export class Backspace implements IEditingCommand {
     }
 
     private deleteLine() {
-        const line = this.receiver.getPosition().line;
-        const contents = this.receiver.getLineContent(line);
-        const document = this.receiver.getDocument();
-        this.receiver.deleteLine(line);
-        this.receiver.handleCursorOperation(new CursorOperations.MoveUp());
-        this.receiver.handleCursorOperation(new CursorOperations.MoveRight(
-            this.receiver.getCurrentLineLength()
-        ));
-        document.insertString(this.receiver.getPosition().offset, contents);
+        // const line = this.receiver.getPosition().getLine();
+        // const contents = this.receiver.getLineContent(line);
+        // const document = this.receiver.getDocument();
+        // this.receiver.deleteLine(line);
+        // this.receiver.handleCursorOperation(new CursorOperations.MoveUp());
+        // this.receiver.handleCursorOperation(new CursorOperations.MoveRight(
+        //     this.receiver.getCurrentLineLength()
+        // ));
+        // document.insertString(this.receiver.getPosition().offset, contents); // TODO
     }
 
     private isLineEmpty() {
-        return this.receiver.getPosition().col <= 0
+        return this.receiver.getPosition().getCol() <= 0
     }
 
     private isLinesLeft() {
-        return this.receiver.getPosition().line > 0
+        return this.receiver.getPosition().getLine() > 0
     }
 
     undo(): void {
@@ -49,14 +49,17 @@ export interface IBackspaceStrategy {
 
 export class SingleChar implements IBackspaceStrategy {
     execute(receiver: EditorFacade): void {
-        // receiver.deleteChar();// TODO
+        const document = receiver.getDocument();
+        const pos = receiver.getPosition();
+        const offset = document.getOffsetFromVisualPosition(pos);
+        document.removeString(offset - 1, offset);
         receiver.handleCursorOperation(new CursorOperations.MoveLeft());
     }
 }
 
 export class LineDiscard implements IBackspaceStrategy {
     execute(receiver: EditorFacade): void {
-        while (receiver.getPosition().col > 0) {
+        while (receiver.getPosition().getCol() > 0) {
             // receiver.deleteChar(); // TODO
             receiver.handleCursorOperation(new CursorOperations.MoveLeft());
         }

@@ -1,6 +1,6 @@
 import { Backspace, LineDiscard, SingleChar } from "./commands/backspaceCommand";
 import { Down, Left, LineEnd, LineStart, Right, Up } from "./commands/cursorMove";
-import { EditorCommands, IEditingCommand } from "./commands/editorCommands";
+import { EditorCommands, EditingCommand } from "./commands/editorCommands";
 import EditorFacade from "./editor";
 
 export class EditorKeyboardHandlerFactory {
@@ -27,7 +27,7 @@ export class EditorKeyboardHandlerFactory {
 }
 
 interface KeyboardHandler {
-    getCommand(event: KeyboardEvent): IEditingCommand | undefined;
+    getCommand(event: KeyboardEvent): EditingCommand | undefined;
 }
 
 class ControlOperation implements KeyboardHandler {
@@ -35,7 +35,7 @@ class ControlOperation implements KeyboardHandler {
         private receiver: EditorFacade
     ) {}
 
-    getCommand(event: KeyboardEvent): IEditingCommand | undefined {
+    getCommand(event: KeyboardEvent): EditingCommand | undefined {
         switch (event.key) {
             case 'ArrowLeft':
                 return new EditorCommands.CursorMove(new LineStart());
@@ -60,7 +60,7 @@ class SimpleOperation extends TypableOperation implements KeyboardHandler {
         super()
     }
 
-    getCommand(event: KeyboardEvent): IEditingCommand | undefined {
+    getCommand(event: KeyboardEvent): EditingCommand | undefined {
         switch (event.key) {
             case 'Backspace':
                 return new Backspace(this.receiver, new SingleChar());
@@ -87,7 +87,7 @@ class SimpleOperation extends TypableOperation implements KeyboardHandler {
 }
 
 class ShiftOperation extends TypableOperation implements KeyboardHandler {
-    getCommand(event: KeyboardEvent): IEditingCommand | undefined {
+    getCommand(event: KeyboardEvent): EditingCommand | undefined {
         if (!this.isPrintableChar(event.key))
             return;
         // event.key is capitalized by default, so we don't need to use .toUpperCase()

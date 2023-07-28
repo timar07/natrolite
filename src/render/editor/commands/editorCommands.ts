@@ -1,21 +1,25 @@
 import { CursorOperations } from "../view/cursor/cursorOperations";
-import EditorFacade, { ICommand, IPrimitiveCommand } from "../editor";
-import { IBackspaceStrategy } from "./backspaceCommand";
+import EditorFacade, { ICommand as Command, IPrimitiveCommand } from "../editor";
 import { CursorMoveStrategy } from "./cursorMove";
 
-export interface IEditingCommand extends ICommand<EditorFacade> {}
-export interface IEditorCursorCommand extends IPrimitiveCommand<EditorFacade> {};
+export interface EditingCommand extends Command<EditorFacade> {}
+export interface EditorCursorCommand extends IPrimitiveCommand<EditorFacade> {};
 
 export namespace EditorCommands {
 
-export class InsertChar implements IEditingCommand {
+export class InsertChar implements EditingCommand {
     constructor(
         private char: string
     ) {}
 
     execute(receiver: EditorFacade): void {
         const document = receiver.getDocument();
-        document.insertString(receiver.getPosition().offset, this.char);
+        document.insertString(
+            document.getOffsetFromVisualPosition(
+                receiver.getPosition()
+            ),
+            this.char
+        );
         receiver.handleCursorOperation(new CursorOperations.MoveRight());
     }
 
@@ -24,18 +28,25 @@ export class InsertChar implements IEditingCommand {
     }
 }
 
-export class Enter implements IEditingCommand {
+export class Enter implements EditingCommand {
     execute(receiver: EditorFacade): void {
-        this.breakLine(receiver);
+        const document = receiver.getDocument();
+        document.insertString(
+            document.getOffsetFromVisualPosition(
+                receiver.getPosition()
+            ),
+            '\n'
+        );
+
         receiver.handleCursorOperation(new CursorOperations.CarriageReturn());
         receiver.handleCursorOperation(new CursorOperations.MoveDown());
     }
 
     private breakLine(receiver: EditorFacade) {
-        const pos = receiver.getPosition();
-        const content = receiver.getLineContent(pos.line);
-        receiver.setLineContent(content.slice(0, pos.col), pos.line);
-        receiver.addLine(content.slice(pos.col), receiver.getPosition().line + 1);
+        // const pos = receiver.getPosition();
+        // const content = receiver.getLineContent(pos.getLine());
+        // receiver.setLineContent(content.slice(0, pos.getCol()), pos.getLine());
+        // receiver.addLine(content.slice(pos.getCol()), receiver.getPosition().getLine() + 1);
     }
 
     undo(): void {
@@ -43,12 +54,12 @@ export class Enter implements IEditingCommand {
     }
 }
 
-export class Tab implements IEditingCommand {
+export class Tab implements EditingCommand {
     private static indent = 4;
 
     execute(receiver: EditorFacade): void {
         const document = receiver.getDocument();
-        document.insertString(receiver.getPosition().offset, ' '.repeat(Tab.indent));
+        // document.insertString(receiver.getPosition().offset, ' '.repeat(Tab.indent)); // TODO
         receiver.handleCursorOperation(new CursorOperations.MoveRight(Tab.indent));
     }
 
@@ -57,7 +68,7 @@ export class Tab implements IEditingCommand {
     }
 }
 
-export class CursorMove implements IEditingCommand {
+export class CursorMove implements EditingCommand {
     constructor(
         private strategy: CursorMoveStrategy
     ) {}
@@ -69,19 +80,19 @@ export class CursorMove implements IEditingCommand {
 
     // Prevents the cursor from being in a non-existing position
     private normalizeHorizontalPosition(receiver: EditorFacade) {
-        if (!this.isOutOfLine(receiver)) return;
+        // if (!this.isOutOfLine(receiver)) return;
 
-        receiver.handleCursorOperation(
-            new CursorOperations.MoveLeft(this.getOverflow(receiver))
-        );
+        // receiver.handleCursorOperation(
+        //     new CursorOperations.MoveLeft(this.getOverflow(receiver))
+        // );
     }
 
     private isOutOfLine(receiver: EditorFacade) {
-        return receiver.getCurrentLineLength() < receiver.getPosition().col
+        // return receiver.getCurrentLineLength() < receiver.getPosition().getCol()
     }
 
     private getOverflow(receiver: EditorFacade) {
-        return receiver.getPosition().col - receiver.getCurrentLineLength()
+        // return receiver.getPosition().getCol() - receiver.getCurrentLineLength()
     }
 
     undo(receiver: EditorFacade): void {

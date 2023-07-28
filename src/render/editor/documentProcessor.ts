@@ -1,68 +1,92 @@
-export class DocumentProcessor {
-    private state = 'Hello, world!';
+import { VisualPosition } from "./visualPosition";
+
+export class DocumentProcessor implements Editable {
+    private state = '';
     public onChange?: (ev: DocumentEvent) => void;
 
     /**
-     * Inserts string at specific offset
      * @throws {InvalidOffset} if offset is larger then document length
      */
     public insertString(offset: number, str: string) {
-        if (offset > this.state.length)
-            throw new InvalidOffset();
-
+        this.assertValidOffset(offset);
         this.state = this.state.slice(0, offset) + str + this.state.slice(offset);
-        this.onChange?.(new Insert(this, str, offset));
+        this.onChange?.(new DocumentEvent(this, offset, offset, str));
     }
 
     /**
-     * Removes string starting from `startOffset` to `endOffset`
      * @throws {InvalidOffset} if either `startOffset` of `endOffset` is larger
      * then document length
      */
     public removeString(startOffset: number, endOffset: number) {
-        if (startOffset > this.state.length ||
-            endOffset > this.state.length) {
-            throw new InvalidOffset();
-        }
-
+        this.assertValidOffset(startOffset);
+        this.assertValidOffset(endOffset);
         this.state = this.state.slice(0, startOffset) + this.state.slice(endOffset);
-        this.onChange?.(new Remove(this, startOffset, endOffset));
+        this.onChange?.(new DocumentEvent(this, startOffset, endOffset, ''));
     }
 
-    public getLineFromOffset(offset: number) { // TODO: Cache
-        let lineCounter = 0;
+    /**
+     * @throws {InvalidOffset}
+     */
+    public getOffsetFromVisualPosition(pos: VisualPosition) { // TODO: Cache
+        let line = 0;
+        let col = 0;
+        let offset = 0;
 
-        for (let i in Array.from(this.state.slice(0, offset))) {
-            if (i == '\n') lineCounter++;
+        for (; offset < this.state.length; offset++) {
+            if (line == pos.getLine() && col == pos.getCol()) {
+                break;
+            }
+
+            if (this.state[offset] == '\n') {
+                line++;
+                col = 0;
+            }
+
+            col++;
+        }
+
+        return offset;
+    }
+
+    /**
+     * @throws {InvalidOffset}
+     */
+    public getVisualPositionFromOffset(offset: number) { // TODO: Cache
+        this.assertValidOffset(offset);
+        let line = 0;
+        let col = 0;
+
+        for (let i = 0; i < this.state.length; i++) {
+            if (this.state[i] == '\n') {
+                line++;
+                col = 0;
+            } else {
+                col++;
+            }
+        }
+
+        return new VisualPosition(line, col);
+    }
+
+    private assertValidOffset(offset: number) {
+        if (offset > this.state.length) {
+            throw new InvalidOffset(offset);
         }
     }
 }
 
-export interface DocumentEvent {
-    readonly document: DocumentProcessor,
-    readonly startOffset: number;
-    readonly endOffset: number;
-}
-
-export class Insert implements DocumentEvent {
-    readonly endOffset: number;
-
-    constructor(
-        readonly document: DocumentProcessor,
-        readonly str: string,
-        readonly startOffset: number,
-    ) {
-        this.endOffset = this.startOffset;
-    }
-}
-
-export class Remove implements DocumentEvent {
+export class DocumentEvent {
     constructor(
         readonly document: DocumentProcessor,
         readonly startOffset: number,
         readonly endOffset: number,
+        readonly str: string
     ) {
     }
 }
 
-class InvalidOffset extends Error {}
+class InvalidOffset extends Error {
+    constructor(offset: number) {
+        super('Invalid offset: ' + offset);
+    }
+}

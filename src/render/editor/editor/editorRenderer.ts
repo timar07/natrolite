@@ -1,7 +1,7 @@
 import LinesRenderer from "../view/lines/linesRenderer";
 import { TEditorPosition } from "../editor";
+import { DocumentEvent } from "../documentProcessor";
 import "./editor.css";
-import { DocumentEvent, Insert } from "../documentProcessor";
 
 export default class EditorRenderer {
     private root = document.querySelector<HTMLElement>('.TextEditor') as HTMLElement;
@@ -12,20 +12,24 @@ export default class EditorRenderer {
     constructor() {}
 
     public renderChanges(ev: DocumentEvent) {
+        const start = ev.document.getVisualPositionFromOffset(ev.startOffset);
+        const end = ev.document.getVisualPositionFromOffset(ev.startOffset);
+
+        for (let lineIndex = start.getLine(); lineIndex <= end.getLine(); lineIndex++) {
+            const lineText = this.lines.getLineContent(lineIndex);
+            ev.str.split('\n').forEach((textFragment, index) => {
+                this.lines.setLineContent(
+                    lineText.slice(0, start.getCol()) + textFragment + lineText.slice(end.getCol()),
+                    start.getLine() + index
+                );
+            });
+        }
     }
 
     public getElement() { return this.root; }
 
     public getLineLength(line: number) {
         return this.lines.getLineLength(line);
-    }
-
-    public getLineContents(line: number) {
-        return this.lines.getLineContents(line);
-    }
-
-    public setLineContent(content: string, line: number) {
-        return this.lines.setLineContent(content, line);
     }
 
     public addLine(content: string, at: number) {

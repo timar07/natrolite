@@ -3,6 +3,7 @@ import { IMoveOperation } from "./view/cursor/cursorOperations";
 import { EditorKeyboardHandlerFactory } from "./editorKeyboard";
 import EditorRenderer from "./editor/editorRenderer";
 import { DocumentProcessor } from "./documentProcessor";
+import { VisualPosition } from "./visualPosition";
 
 export type TEditorPosition = {
     line: number,
@@ -26,12 +27,7 @@ export default class EditorFacade {
         new DOMRect(100, 50, 8, 16.5) // FIXME: Hardcoded
     );
 
-    private editorPosition: TEditorPosition = {
-        line: 0,
-        col: 0,
-        offset: 0
-    };
-
+    private editorPosition = new VisualPosition(0, 0);
     private document = new DocumentProcessor();
 
     constructor() {
@@ -40,8 +36,8 @@ export default class EditorFacade {
         };
 
         document.onkeydown = this.handleKeyPress.bind(this);
-        this.view.addLine('', this.editorPosition.line);
-        this.document.onChange = this.view.renderChanges;
+        this.view.addLine('', this.editorPosition.getLine());
+        this.document.onChange = (ev) => this.view.renderChanges(ev);
     }
 
     public getDocument() {
@@ -51,7 +47,6 @@ export default class EditorFacade {
     public resetSelection() {
         document.getSelection()?.removeAllRanges();
     }
-
 
     public editLine(line: number, strategy: LineEditingStrategy) {
 
@@ -74,28 +69,15 @@ export default class EditorFacade {
     }
 
     public getCurrentLineLength() {
-        return this.view.getLineLength(this.editorPosition.line);
+        return this.view.getLineLength(this.editorPosition.getLine())
     }
 
-    public getLineLength(line: number) {
-        return this.view.getLineLength(line)
-    }
-
-    public getLineContent(line: number) {
-        return this.view.getLineContents(line);
-    }
-
-    public setLineContent(content: string, line: number) {
-        return this.view.setLineContent(content, line);
-    }
-
-    public getPosition(): TEditorPosition {
+    public getPosition(): VisualPosition {
         const relativeRect = this.getRelativeCursorRect();
-        return {
-            line: (relativeRect.top + this.view.getElement().scrollTop) / relativeRect.height,
-            col: relativeRect.left / relativeRect.width,
-            offset: 0
-        }
+        return new VisualPosition(
+            (relativeRect.top + this.view.getElement().scrollTop) / relativeRect.height,
+            relativeRect.left / relativeRect.width,
+        );
     }
 
     private handleKeyPress(event: KeyboardEvent) {

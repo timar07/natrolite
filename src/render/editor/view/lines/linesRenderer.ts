@@ -21,12 +21,13 @@ export default class LinesRenderer {
         return this.lines[lineIndex]?.getTextContent().length || 0;
     }
 
-    public getLineContents(lineIndex: number) {
+    public getLineContent(lineIndex: number) {
         return this.lines[lineIndex]?.getTextContent() || '';
     }
 
     public setLineContent(content: string, lineIndex: number) {
-        this.lines[lineIndex]?.updateTextContent(content);
+        const line = this.lines[lineIndex];
+        line ? line.updateTextContent(content): this.addLine(content, lineIndex);
     }
 
     public addLine(content: string, lineIndex: number) {
