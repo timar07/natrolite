@@ -1,6 +1,9 @@
 import { Backspace, LineDiscard, SingleChar } from "./commands/backspaceCommand";
-import { Down, Left, LineEnd, LineStart, Right, Up } from "./commands/cursorMove";
-import { EditorCommands, EditingCommand } from "./commands/editorCommands";
+import { CursorMove, Down, Left, LineEnd, LineStart, Right, Up } from "./commands/cursorMove";
+import { EditingCommand } from "./commands/editorCommands";
+import { Enter } from "./commands/enterCommand";
+import { InsertChar } from "./commands/insertCharCommand";
+import { Tab } from "./commands/tabCommand";
 import EditorFacade from "./editor";
 
 export class EditorKeyboardHandlerFactory {
@@ -38,9 +41,9 @@ class ControlOperation implements KeyboardHandler {
     getCommand(event: KeyboardEvent): EditingCommand | undefined {
         switch (event.key) {
             case 'ArrowLeft':
-                return new EditorCommands.CursorMove(new LineStart());
+                return new CursorMove(new LineStart());
             case 'ArrowRight':
-                return new EditorCommands.CursorMove(new LineEnd());
+                return new CursorMove(new LineEnd());
             case 'Backspace':
                 return new Backspace(this.receiver, new LineDiscard());
         }
@@ -65,22 +68,22 @@ class SimpleOperation extends TypableOperation implements KeyboardHandler {
             case 'Backspace':
                 return new Backspace(this.receiver, new SingleChar());
             case 'ArrowLeft':
-                return new EditorCommands.CursorMove(new Left());
+                return new CursorMove(new Left());
             case 'ArrowRight':
-                return new EditorCommands.CursorMove(new Right());
+                return new CursorMove(new Right());
             case 'ArrowDown':
-                return new EditorCommands.CursorMove(new Down());
+                return new CursorMove(new Down());
             case 'ArrowUp':
-                return new EditorCommands.CursorMove(new Up());
+                return new CursorMove(new Up());
             case 'Enter':
-                return new EditorCommands.Enter();
+                return new Enter();
             case 'Tab':
-                return new EditorCommands.Tab();
+                return new Tab();
             default: {
                 if (!this.isPrintableChar(event.key))
                     return;
 
-                return new EditorCommands.InsertChar(event.key.toString());
+                return new InsertChar(event.key.toString());
             }
         }
     }
@@ -91,6 +94,6 @@ class ShiftOperation extends TypableOperation implements KeyboardHandler {
         if (!this.isPrintableChar(event.key))
             return;
         // event.key is capitalized by default, so we don't need to use .toUpperCase()
-        return new EditorCommands.InsertChar(event.key.toString());
+        return new InsertChar(event.key.toString());
     }
 }

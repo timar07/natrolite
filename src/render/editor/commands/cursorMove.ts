@@ -1,5 +1,38 @@
 import EditorFacade from "../editor";
 import { CursorOperations } from "../view/cursor/cursorOperations";
+import { EditingCommand } from "./editorCommands";
+
+export class CursorMove implements EditingCommand {
+    constructor(
+        private strategy: CursorMoveStrategy
+    ) {}
+
+    execute(receiver: EditorFacade): void {
+        this.strategy.move(receiver);
+        this.normalizeHorizontalPosition(receiver);
+    }
+
+    // Prevents the cursor from being in a non-existing position
+    private normalizeHorizontalPosition(receiver: EditorFacade) {
+        // if (!this.isOutOfLine(receiver)) return;
+
+        // receiver.handleCursorOperation(
+        //     new CursorOperations.MoveLeft(this.getOverflow(receiver))
+        // );
+    }
+
+    private isOutOfLine(receiver: EditorFacade) {
+        // return receiver.getCurrentLineLength() < receiver.getPosition().getCol()
+    }
+
+    private getOverflow(receiver: EditorFacade) {
+        // return receiver.getPosition().getCol() - receiver.getCurrentLineLength()
+    }
+
+    undo(receiver: EditorFacade): void {
+        throw new Error("Method not implemented.");
+    }
+}
 
 export interface CursorMoveStrategy {
     move(receiver: EditorFacade): void;

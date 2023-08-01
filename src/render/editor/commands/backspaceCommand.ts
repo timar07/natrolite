@@ -5,29 +5,24 @@ import EditorFacade from "../editor";
 export class Backspace implements EditingCommand {
     constructor(
         private receiver: EditorFacade,
-        private strategy: IBackspaceStrategy
+        private strategy: BackspaceStrategy
     ) {}
 
     execute(receiver: EditorFacade): void {
         if (this.isLineEmpty()) {
             if (!this.isLinesLeft()) return;
-            this.deleteLine();
+            this.deleteLine(receiver);
             return;
         }
 
         this.strategy.execute(receiver);
     }
 
-    private deleteLine() {
-        // const line = this.receiver.getPosition().getLine();
-        // const contents = this.receiver.getLineContent(line);
-        // const document = this.receiver.getDocument();
-        // this.receiver.deleteLine(line);
-        // this.receiver.handleCursorOperation(new CursorOperations.MoveUp());
-        // this.receiver.handleCursorOperation(new CursorOperations.MoveRight(
-        //     this.receiver.getCurrentLineLength()
-        // ));
-        // document.insertString(this.receiver.getPosition().offset, contents); // TODO
+    private deleteLine(receiver: EditorFacade) {
+        new SingleChar().execute(receiver);
+        this.receiver.handleCursorOperation(new CursorOperations.MoveRight(
+            this.receiver.getCurrentLineLength()
+        ));
     }
 
     private isLineEmpty() {
@@ -43,11 +38,11 @@ export class Backspace implements EditingCommand {
     }
 }
 
-export interface IBackspaceStrategy {
+export interface BackspaceStrategy {
     execute(receiver: EditorFacade): void;
 }
 
-export class SingleChar implements IBackspaceStrategy {
+export class SingleChar implements BackspaceStrategy {
     execute(receiver: EditorFacade): void {
         const document = receiver.getDocument();
         const pos = receiver.getPosition();
@@ -57,7 +52,7 @@ export class SingleChar implements IBackspaceStrategy {
     }
 }
 
-export class LineDiscard implements IBackspaceStrategy {
+export class LineDiscard implements BackspaceStrategy {
     execute(receiver: EditorFacade): void {
         while (receiver.getPosition().getCol() > 0) {
             // receiver.deleteChar(); // TODO

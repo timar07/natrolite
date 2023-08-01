@@ -1,13 +1,13 @@
-import { ICommand } from "../../editor";
+import { Command } from "../../core/command";
 import Cursor from "./cursor";
 
-export interface IMoveOperation extends ICommand<Cursor> {
+export interface MoveOperation extends Command<Cursor> {
     getMoveMatrix(): [number, number];
 }
 
 export namespace CursorOperations {
 
-export class MoveLeft implements IMoveOperation {
+export class MoveLeft implements MoveOperation {
     constructor(
         private times: number = 1
     ) {}
@@ -25,7 +25,7 @@ export class MoveLeft implements IMoveOperation {
     }
 }
 
-export class MoveRight implements IMoveOperation {
+export class MoveRight implements MoveOperation {
     constructor(
         private times: number = 1
     ) {}
@@ -41,7 +41,7 @@ export class MoveRight implements IMoveOperation {
     }
 }
 
-export class MoveDown implements IMoveOperation {
+export class MoveDown implements MoveOperation {
     execute(receiver: Cursor): void {
         receiver.handleOperation(this);
     }
@@ -53,7 +53,7 @@ export class MoveDown implements IMoveOperation {
     }
 }
 
-export class MoveUp implements IMoveOperation {
+export class MoveUp implements MoveOperation {
     execute(receiver: Cursor): void {
         receiver.handleOperation(this);
     }
@@ -65,7 +65,7 @@ export class MoveUp implements IMoveOperation {
     }
 }
 
-export class NoMove implements IMoveOperation {
+export class NoMove implements MoveOperation {
     execute(receiver: Cursor): void {
         receiver.handleOperation(this);
     }
@@ -77,7 +77,7 @@ export class NoMove implements IMoveOperation {
     }
 }
 
-export class CarriageReturn implements IMoveOperation {
+export class CarriageReturn implements MoveOperation {
     execute(receiver: Cursor): void {
         receiver.handleOperation(this);
     }

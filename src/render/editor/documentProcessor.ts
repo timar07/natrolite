@@ -1,19 +1,27 @@
-import { VisualPosition } from "./visualPosition";
+import VisualPosition from "./visualPosition";
 
-export class DocumentProcessor implements Editable {
-    private state = '';
+export class DocumentProcessor {
+    private state: string = '';
     public onChange?: (ev: DocumentEvent) => void;
 
+    public setState(initialState: string) {
+        this.state = initialState;
+        this.onChange?.(new DocumentEvent(0, 0, this.state));
+    }
+
     /**
+     * Inserts string at specific offset
      * @throws {InvalidOffset} if offset is larger then document length
      */
     public insertString(offset: number, str: string) {
         this.assertValidOffset(offset);
         this.state = this.state.slice(0, offset) + str + this.state.slice(offset);
-        this.onChange?.(new DocumentEvent(this, offset, offset, str));
+        console.log(this.state);
+        this.onChange?.(new DocumentEvent(offset, offset, str));
     }
 
     /**
+     * Removes string starting from `startOffset` to `endOffset`
      * @throws {InvalidOffset} if either `startOffset` of `endOffset` is larger
      * then document length
      */
@@ -21,31 +29,30 @@ export class DocumentProcessor implements Editable {
         this.assertValidOffset(startOffset);
         this.assertValidOffset(endOffset);
         this.state = this.state.slice(0, startOffset) + this.state.slice(endOffset);
-        this.onChange?.(new DocumentEvent(this, startOffset, endOffset, ''));
+        console.log(this.state);
+        this.onChange?.(new DocumentEvent(startOffset, endOffset, ''));
     }
 
     /**
-     * @throws {InvalidOffset}
+     * @throws {Error} if position does not exist in document
      */
     public getOffsetFromVisualPosition(pos: VisualPosition) { // TODO: Cache
         let line = 0;
         let col = 0;
         let offset = 0;
 
-        for (; offset < this.state.length; offset++) {
+        for (; offset <= this.state.length; offset++, col++) {
             if (line == pos.getLine() && col == pos.getCol()) {
-                break;
+                return offset;
             }
 
             if (this.state[offset] == '\n') {
                 line++;
-                col = 0;
+                col = -1; // only first nonspace symbol has index of zero
             }
-
-            col++;
         }
 
-        return offset;
+        throw new Error(`VisualPosition ${pos.toString()} does not exist in document`);
     }
 
     /**
@@ -56,12 +63,10 @@ export class DocumentProcessor implements Editable {
         let line = 0;
         let col = 0;
 
-        for (let i = 0; i < this.state.length; i++) {
-            if (this.state[i] == '\n') {
+        for (let i = 0; i < offset; i++, col++) {
+            if (this.state[i] === '\n') {
                 line++;
-                col = 0;
-            } else {
-                col++;
+                col = -1;
             }
         }
 
@@ -69,7 +74,7 @@ export class DocumentProcessor implements Editable {
     }
 
     private assertValidOffset(offset: number) {
-        if (offset > this.state.length) {
+        if (offset > this.state.length + 1) {
             throw new InvalidOffset(offset);
         }
     }
@@ -77,7 +82,6 @@ export class DocumentProcessor implements Editable {
 
 export class DocumentEvent {
     constructor(
-        readonly document: DocumentProcessor,
         readonly startOffset: number,
         readonly endOffset: number,
         readonly str: string

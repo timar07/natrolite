@@ -2,7 +2,7 @@ import CursorState from "./cursorState";
 import CursorRenderer from "./cursorRenderer";
 import { MouseDown, MouseMove } from "./cursorEvents";
 import { DefaultDecorator } from "./cursorDecorations";
-import { IMoveOperation } from "./cursorOperations";
+import { MoveOperation } from "./cursorOperations";
 import "./cursor.css";
 
 export default class Cursor {
@@ -44,7 +44,7 @@ export default class Cursor {
         return this.state.getRect();
     }
 
-    handleOperation(op?: IMoveOperation) {
+    handleOperation(op?: MoveOperation) {
         if (!op) return;
         this.setNewPosition(op.getMoveMatrix());
     }
