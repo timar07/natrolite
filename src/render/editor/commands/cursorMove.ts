@@ -1,5 +1,38 @@
 import EditorFacade from "../editor";
-import { CursorOperations } from "../../cursor/cursorOperations";
+import { CursorOperations } from "../view/cursor/cursorOperations";
+import { EditingCommand } from "./editorCommands";
+
+export class CursorMove implements EditingCommand {
+    constructor(
+        private strategy: CursorMoveStrategy
+    ) {}
+
+    execute(receiver: EditorFacade): void {
+        this.strategy.move(receiver);
+        this.normalizeHorizontalPosition(receiver);
+    }
+
+    // Prevents the cursor from being in a non-existing position
+    private normalizeHorizontalPosition(receiver: EditorFacade) {
+        // if (!this.isOutOfLine(receiver)) return;
+
+        // receiver.handleCursorOperation(
+        //     new CursorOperations.MoveLeft(this.getOverflow(receiver))
+        // );
+    }
+
+    private isOutOfLine(receiver: EditorFacade) {
+        // return receiver.getCurrentLineLength() < receiver.getPosition().getCol()
+    }
+
+    private getOverflow(receiver: EditorFacade) {
+        // return receiver.getPosition().getCol() - receiver.getCurrentLineLength()
+    }
+
+    undo(receiver: EditorFacade): void {
+        throw new Error("Method not implemented.");
+    }
+}
 
 export interface CursorMoveStrategy {
     move(receiver: EditorFacade): void;
@@ -8,7 +41,7 @@ export interface CursorMoveStrategy {
 
 export class Up implements CursorMoveStrategy {
     move(receiver: EditorFacade): void {
-        if (receiver.getPosition().line == 0) return;
+        if (receiver.getPosition().getLine() == 0) return;
         receiver.handleCursorOperation(new CursorOperations.MoveUp());
     }
 
@@ -19,7 +52,7 @@ export class Up implements CursorMoveStrategy {
 
 export class Down implements CursorMoveStrategy {
     move(receiver: EditorFacade): void {
-        if (receiver.getPosition().line == receiver.getLastLineIndex())
+        if (receiver.getPosition().getLine() == receiver.getLastLineIndex())
             return;
         receiver.handleCursorOperation(new CursorOperations.MoveDown());
     }
@@ -33,7 +66,7 @@ export class Left implements CursorMoveStrategy {
     move(receiver: EditorFacade): void {
         receiver.resetSelection();
         if (this.isAtStart(receiver)) {
-            if (receiver.getPosition().line != 0)
+            if (receiver.getPosition().getLine() != 0)
                 this.moveToPrevLine(receiver);
             return;
         }
@@ -50,7 +83,7 @@ export class Left implements CursorMoveStrategy {
     }
 
     private isAtStart(receiver: EditorFacade) {
-        return receiver.getPosition().col == 0;
+        return receiver.getPosition().getCol() == 0;
     }
 
     undo(receiver: EditorFacade): void {
@@ -62,7 +95,7 @@ export class Right implements CursorMoveStrategy {
     move(receiver: EditorFacade): void {
         receiver.resetSelection();
         if (this.isOutOfLine(receiver)) {
-            if (receiver.getPosition().line != receiver.getLastLineIndex())
+            if (receiver.getPosition().getLine() != receiver.getLastLineIndex())
                 this.moveToNextLine(receiver);
             return;
         }
@@ -74,13 +107,13 @@ export class Right implements CursorMoveStrategy {
         receiver.handleCursorOperation(new CursorOperations.MoveDown());
         receiver.handleCursorOperation(
             new CursorOperations.MoveLeft(
-                receiver.getPosition().col
+                receiver.getPosition().getCol()
             )
         );
     }
 
     private isOutOfLine(receiver: EditorFacade) {
-        return receiver.getPosition().col >= receiver.getCurrentLineLength();
+        return receiver.getPosition().getCol() >= receiver.getCurrentLineLength();
     }
 
     undo(receiver: EditorFacade): void {
@@ -92,7 +125,7 @@ export class LineStart implements CursorMoveStrategy {
     move(receiver: EditorFacade): void {
         receiver.handleCursorOperation(
             new CursorOperations.MoveLeft(
-                receiver.getPosition().col
+                receiver.getPosition().getCol()
             )
         );
     }

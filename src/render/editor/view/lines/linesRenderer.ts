@@ -1,28 +1,5 @@
-import { TEditorPosition } from "../editor/editor";
 import LinesNumeratorRenderer from "../linesNumerator/linesNumeratorRenderer";
 import "./line.css";
-
-interface ILineEditingStrategy {
-    edit(pos: TEditorPosition, text: string): string;
-}
-
-export class Insert implements ILineEditingStrategy {
-    constructor(
-        private char: string
-    ) {}
-
-    edit(pos: TEditorPosition, text: string) {
-        return text.slice(0, pos.col) + this.char + text.slice(pos.col);
-    }
-}
-
-export class Delete implements ILineEditingStrategy {
-    constructor() {}
-
-    edit(pos: TEditorPosition, text: string) {
-        return text.slice(0, pos.col-1) + text.slice(pos.col);
-    }
-}
 
 export default class LinesRenderer {
     private container: Element;
@@ -40,36 +17,29 @@ export default class LinesRenderer {
         return this.lines.length - 1;
     }
 
-    public getLineLength(line: number) {
-        return this.lines[line]?.getTextContent().length || 0;
+    public getLineLength(lineIndex: number) {
+        return this.lines[lineIndex]?.getTextContent().length || 0;
     }
 
-    public getLineContents(line: number) {
-        return this.lines[line]?.getTextContent() || '';
+    public getLineContent(lineIndex: number) {
+        return this.lines[lineIndex]?.getTextContent() || '';
     }
 
-    public setLineContent(content: string, line: number) {
-        this.lines[line]?.updateTextContent(content);
+    public setLineContent(content: string, lineIndex: number) {
+        const line = this.lines[lineIndex];
+        line ? line.updateTextContent(content): this.addLine(content, lineIndex);
     }
 
-    public addLine(content: string, at: number) {
-        const line = new SingleLineRenderer(this.container, content, at);
-        this.lines.splice(at, 0, line);
+    public addLine(content: string, lineIndex: number) {
+        const line = new SingleLineRenderer(this.container, content, lineIndex);
+        this.lines.splice(lineIndex, 0, line);
         this.linesNumerator.increment();
     }
 
-    public deleteLine(line: number) {
-        this.lines[line]?.remove();
-        this.lines.splice(line, 1);
+    public deleteLine(lineIndex: number) {
+        this.lines[lineIndex]?.remove();
+        this.lines.splice(lineIndex, 1);
         this.linesNumerator.decrement();
-    }
-
-    public edit(
-        pos: TEditorPosition,
-        strategy: ILineEditingStrategy
-    ) {
-        const line = this.lines[pos.line];
-        line?.updateTextContent(strategy.edit(pos, line.getTextContent()));
     }
 
     private createLinesContainer() {
