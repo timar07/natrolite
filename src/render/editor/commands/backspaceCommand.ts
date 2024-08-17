@@ -20,8 +20,9 @@ export class Backspace implements EditingCommand {
 
     private deleteLine(receiver: EditorFacade) {
         new SingleChar().execute(receiver);
+        this.receiver.handleCursorOperation(new CursorOperations.MoveUp());
         this.receiver.handleCursorOperation(new CursorOperations.MoveRight(
-            this.receiver.getCurrentLineLength()
+            this.receiver.getCurrentLineLength()+1
         ));
     }
 

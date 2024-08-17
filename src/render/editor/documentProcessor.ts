@@ -1,12 +1,11 @@
 import VisualPosition from "./visualPosition";
 
 export class DocumentProcessor {
-    private state: string = '';
+    public state: string = '';
     public onChange?: (ev: DocumentEvent) => void;
 
     public setState(initialState: string) {
-        this.state = initialState;
-        this.onChange?.(new DocumentEvent(0, 0, this.state));
+        this.insertString(0, initialState);
     }
 
     /**
@@ -15,22 +14,22 @@ export class DocumentProcessor {
      */
     public insertString(offset: number, str: string) {
         this.assertValidOffset(offset);
+        this.onChange?.(new DocumentEvent(offset, offset, str));
         this.state = this.state.slice(0, offset) + str + this.state.slice(offset);
         console.log(this.state);
-        this.onChange?.(new DocumentEvent(offset, offset, str));
     }
 
     /**
      * Removes string starting from `startOffset` to `endOffset`
-     * @throws {InvalidOffset} if either `startOffset` of `endOffset` is larger
+     * @throws {InvalidOffset} if either `startOffset` or `endOffset` is larger
      * then document length
      */
     public removeString(startOffset: number, endOffset: number) {
         this.assertValidOffset(startOffset);
         this.assertValidOffset(endOffset);
+        this.onChange?.(new DocumentEvent(startOffset, endOffset, ''));
         this.state = this.state.slice(0, startOffset) + this.state.slice(endOffset);
         console.log(this.state);
-        this.onChange?.(new DocumentEvent(startOffset, endOffset, ''));
     }
 
     /**

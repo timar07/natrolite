@@ -23,7 +23,7 @@ export default class EditorRenderer {
     }
 
     public renderChanges(ev: RenderingEvent) {
-        console.log(ev)
+        // console.log(ev)
         this.removeTextRange(ev.getRange());
         this.insertText(ev.getContent(), ev.getRange().getStart());
     }
@@ -81,13 +81,16 @@ export default class EditorRenderer {
             start.getLine()
         );
 
-        for (let line = start.getLine()+1; line < end.getLine()-1; line++) {
-            this.lines.deleteLine(line);
-        }
+        console.log(`[${start.getLine()+1}; ${end.getLine()})`);
 
         this.lines.setLineContent(
             this.lines.getLineContent(end.getLine()).slice(end.getCol()),
             end.getLine()
         );
+
+        for (let line = start.getLine()+1; line <= end.getLine(); line++) {
+            console.log(line);
+            this.lines.deleteLine(line);
+        }
     }
 }
