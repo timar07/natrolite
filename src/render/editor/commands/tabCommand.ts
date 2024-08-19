@@ -7,7 +7,12 @@ export class Tab implements EditingCommand {
 
     execute(receiver: EditorFacade): void {
         const document = receiver.getDocument();
-        // document.insertString(receiver.getPosition().offset, ' '.repeat(Tab.indent)); // TODO
+        document.insertString(
+            document.getOffsetFromVisualPosition(
+                receiver.getPosition()
+            ),
+            ' '.repeat(Tab.indent)
+        );
         receiver.handleCursorOperation(new CursorOperations.MoveRight(Tab.indent));
     }
 
