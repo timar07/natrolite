@@ -55,9 +55,22 @@ export class SingleChar implements BackspaceStrategy {
 
 export class LineDiscard implements BackspaceStrategy {
     execute(receiver: EditorFacade): void {
+        const document = receiver.getDocument();
+
         while (receiver.getPosition().getCol() > 0) {
-            // receiver.deleteChar(); // TODO
-            receiver.handleCursorOperation(new CursorOperations.MoveLeft());
+            const offset = document.getOffsetFromVisualPosition(
+                receiver.getPosition()
+            );
+            const lineLength = receiver.getCurrentLineLength();
+
+            document.removeString(
+                offset - lineLength,
+                offset
+            );
+
+            receiver.handleCursorOperation(new CursorOperations.MoveLeft(
+                lineLength
+            ));
         }
     }
 }
