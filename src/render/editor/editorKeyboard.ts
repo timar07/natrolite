@@ -3,7 +3,7 @@ import { CursorMove, Down, Left, LineEnd, LineStart, Right, Up } from "./command
 import { EditingCommand } from "./commands/editorCommands";
 import { Enter } from "./commands/enterCommand";
 import { InsertChar } from "./commands/insertCharCommand";
-import { Tab } from "./commands/tabCommand";
+import { Tab, Unindent } from "./commands/tabCommand";
 import EditorFacade from "./editor";
 
 export class EditorKeyboardHandlerFactory {
@@ -91,9 +91,16 @@ class SimpleOperation extends TypableOperation implements KeyboardHandler {
 
 class ShiftOperation extends TypableOperation implements KeyboardHandler {
     getCommand(event: KeyboardEvent): EditingCommand | undefined {
-        if (!this.isPrintableChar(event.key))
-            return;
         // event.key is capitalized by default, so we don't need to use .toUpperCase()
-        return new InsertChar(event.key.toString());
+        switch (event.key) {
+            case 'Tab':
+                return new Unindent();
+            default:
+                return (
+                    this.isPrintableChar(event.key)
+                        ? new InsertChar(event.key.toString())
+                        : undefined
+                )
+        }
     }
 }
