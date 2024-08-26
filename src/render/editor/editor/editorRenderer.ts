@@ -81,11 +81,9 @@ export default class EditorRenderer {
             start.getLine()
         );
 
-        console.log(`[${start.getLine()+1}; ${end.getLine()})`);
-
         this.lines.setLineContent(
-            this.lines.getLineContent(end.getLine()).slice(end.getCol()),
-            end.getLine()
+            this.lines.getLineContent(end.getLine()-1) + this.lines.getLineContent(end.getLine()).slice(end.getCol()),
+            end.getLine()-1
         );
 
         for (let line = start.getLine()+1; line <= end.getLine(); line++) {
