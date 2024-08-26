@@ -14,23 +14,21 @@ export class CursorMove implements EditingCommand {
 
     // Prevents the cursor from being in a non-existing position
     private normalizeHorizontalPosition(receiver: EditorFacade) {
-        // if (!this.isOutOfLine(receiver)) return;
-
-        // receiver.handleCursorOperation(
-        //     new CursorOperations.MoveLeft(this.getOverflow(receiver))
-        // );
+        if (this.isOutOfLine(receiver)) {
+            this.undo(receiver);
+        }
     }
 
     private isOutOfLine(receiver: EditorFacade) {
-        // return receiver.getCurrentLineLength() < receiver.getPosition().getCol()
+        return receiver.getCurrentLineLength() < receiver.getPosition().getCol()
     }
 
     private getOverflow(receiver: EditorFacade) {
-        // return receiver.getPosition().getCol() - receiver.getCurrentLineLength()
+        return receiver.getPosition().getCol() - receiver.getCurrentLineLength()
     }
 
     undo(receiver: EditorFacade): void {
-        throw new Error("Method not implemented.");
+        this.strategy.undo(receiver)
     }
 }
 
@@ -46,7 +44,7 @@ export class Up implements CursorMoveStrategy {
     }
 
     undo(receiver: EditorFacade): void {
-        throw new Error("Method not implemented.");
+        receiver.handleCursorOperation(new CursorOperations.MoveDown());
     }
 }
 
@@ -58,7 +56,7 @@ export class Down implements CursorMoveStrategy {
     }
 
     undo(receiver: EditorFacade): void {
-        throw new Error("Method not implemented.");
+        receiver.handleCursorOperation(new CursorOperations.MoveUp());
     }
 }
 
@@ -87,7 +85,7 @@ export class Left implements CursorMoveStrategy {
     }
 
     undo(receiver: EditorFacade): void {
-        throw new Error("Method not implemented.");
+        receiver.handleCursorOperation(new CursorOperations.MoveRight());
     }
 }
 
@@ -117,7 +115,7 @@ export class Right implements CursorMoveStrategy {
     }
 
     undo(receiver: EditorFacade): void {
-        throw new Error("Method not implemented.");
+        receiver.handleCursorOperation(new CursorOperations.MoveLeft());
     }
 }
 
