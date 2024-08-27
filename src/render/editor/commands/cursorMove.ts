@@ -14,13 +14,17 @@ export class CursorMove implements EditingCommand {
 
     // Prevents the cursor from being in a non-existing position
     private normalizeHorizontalPosition(receiver: EditorFacade) {
+        const overflow = this.getOverflow(receiver);
+
         if (this.isOutOfLine(receiver)) {
-            this.undo(receiver);
+            receiver.handleCursorOperation(
+                new CursorOperations.MoveLeft(overflow > 0 ? overflow : 0)
+            )
         }
     }
 
     private isOutOfLine(receiver: EditorFacade) {
-        return receiver.getCurrentLineLength() < receiver.getPosition().getCol()
+        return receiver.getCurrentLineLength() < receiver.getPosition().getCol();
     }
 
     private getOverflow(receiver: EditorFacade) {
@@ -50,9 +54,17 @@ export class Up implements CursorMoveStrategy {
 
 export class Down implements CursorMoveStrategy {
     move(receiver: EditorFacade): void {
-        if (receiver.getPosition().getLine() == receiver.getLastLineIndex())
-            return;
+        if (this.isAtEnd(receiver)) return;
+        const prevPosition = receiver.getPosition().getCol();
         receiver.handleCursorOperation(new CursorOperations.MoveDown());
+        const overflow = prevPosition - receiver.getPosition().getCol();
+        receiver.handleCursorOperation(new CursorOperations.MoveLeft(
+            overflow > 0 ? overflow : 0
+        ));
+    }
+
+    private isAtEnd(receiver: EditorFacade) {
+        return receiver.getPosition().getLine() == receiver.getLastLineIndex();
     }
 
     undo(receiver: EditorFacade): void {
