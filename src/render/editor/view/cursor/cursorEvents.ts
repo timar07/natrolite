@@ -1,11 +1,11 @@
 import RangeUtil from "../../core/rangeUtil";
 import CursorState from "./cursorState";
 
-interface ICursorEventHandler {
+interface CursorEventHandler {
     handle(event: Event, state: CursorState): void;
 }
 
-export class MouseDown implements ICursorEventHandler {
+export class MouseDown implements CursorEventHandler {
     handle(event: MouseEvent, state: CursorState): void {
         state.setFromRect(
             this.isOutsideOfText(event)
@@ -36,8 +36,11 @@ export class MouseDown implements ICursorEventHandler {
             const rect = RangeUtil.getCharRect(target, i);
 
             if (this.isInRectBounds(rect, event.clientX, event.clientY)) {
-                if (this.isCursorBefore(rect, event.clientX, event.clientY)) {
-                    return rect
+                if (
+                    this.isCursorBefore(rect, event.clientX, event.clientY)
+                    || i == chars.length - 1
+                ) {
+                    return rect;
                 }
 
                return new DOMRect(
