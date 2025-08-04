@@ -5,6 +5,7 @@ import EditorRenderer, { RenderingEvent } from "./editor/editorRenderer";
 import { MoveOperation } from "./view/cursor/cursorOperations";
 import { EditorKeyboardHandlerFactory } from "./editorKeyboard";
 import { DocumentEvent, DocumentProcessor } from "./documentProcessor";
+import { CommandStack } from "./commandStack";
 
 export default class EditorFacade {
     private view = new EditorRenderer();
@@ -14,6 +15,7 @@ export default class EditorFacade {
         this.view.getElement(),
         new DOMRect(100, 50, 8, 16.5) // FIXME: Hardcoded
     );
+    private commandStack = new CommandStack([]);
 
     constructor() {
         this.cursor.onUpdate = () => {
@@ -67,7 +69,24 @@ export default class EditorFacade {
 
     private handleKeyPress(event: KeyboardEvent) {
         event.preventDefault();
-        new EditorKeyboardHandlerFactory(this).getCommand(event)?.execute(this);
+
+        try {
+            const command = new EditorKeyboardHandlerFactory(this).getCommand(event);
+
+            console.log(this.commandStack)
+
+            if (typeof command !== 'undefined') {
+                this.commandStack.push(command);
+                command.execute(this);
+            }
+        } catch (exception) {
+            this.handleException(exception);
+        }
+    }
+
+    private handleException(exception: any) {
+        console.log('undo')
+        this.commandStack.undo(this);
     }
 
     private getRelativeCursorRect(): DOMRect {

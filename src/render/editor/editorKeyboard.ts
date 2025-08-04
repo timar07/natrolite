@@ -4,6 +4,7 @@ import { EditingCommand } from "./commands/editorCommands";
 import { Enter } from "./commands/enterCommand";
 import { InsertChar } from "./commands/insertCharCommand";
 import { Tab, Unindent } from "./commands/tabCommand";
+import { Undo } from "./exceptions/undo";
 import EditorFacade from "./editor";
 
 export class EditorKeyboardHandlerFactory {
@@ -25,6 +26,7 @@ export class EditorKeyboardHandlerFactory {
     }
 
     private isControlKey(event: KeyboardEvent) {
+        // @ts-ignore
         return process.platform == 'darwin' ? event.metaKey: event.ctrlKey;
     }
 }
@@ -46,6 +48,8 @@ class ControlOperation implements KeyboardHandler {
                 return new CursorMove(new LineEnd());
             case 'Backspace':
                 return new Backspace(this.receiver, new LineDiscard());
+            case 'z':
+                throw new Undo();
         }
     }
 }

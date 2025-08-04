@@ -19,7 +19,7 @@ export class Tab implements EditingCommand {
     }
 
     undo(receiver: EditorFacade): void {
-        throw new Error("Not implemented");
+        new Unindent().execute(receiver)
     }
 }
 
@@ -33,7 +33,7 @@ export class Unindent implements EditingCommand {
     }
 
     undo(receiver: EditorFacade): void {
-        throw new Error('Method not implemented.');
+        new Tab().execute(receiver)
     }
 
     private removeStartingSpace(receiver: EditorFacade) {

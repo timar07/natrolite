@@ -1,5 +1,6 @@
 import EditorFacade from "../editor";
 import { CursorOperations } from "../view/cursor/cursorOperations";
+import { Backspace, SingleChar } from "./backspaceCommand";
 import { EditingCommand } from "./editorCommands";
 
 export class Enter implements EditingCommand {
@@ -17,7 +18,7 @@ export class Enter implements EditingCommand {
         );
     }
 
-    undo(): void {
-        throw new Error("Method not implemented.");
+    undo(receiver: EditorFacade): void {
+        new Backspace(receiver, new SingleChar()).execute(receiver)
     }
 }

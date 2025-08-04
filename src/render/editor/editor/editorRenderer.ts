@@ -1,6 +1,6 @@
 import LinesRenderer from "../view/lines/linesRenderer";
 import VisualPosition from "../visualPosition";
-import { InlineRange, SelectionRange, VisualRange } from "../visualRange";
+import { SelectionRange } from "../visualRange";
 import "./editor.css";
 
 export class RenderingEvent {
